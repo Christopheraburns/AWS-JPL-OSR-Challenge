@@ -1,0 +1,317 @@
+{
+    "language": {
+        "tern_defs": {
+            "json()": {
+                "browser": {
+                    "enabled": true
+                },
+                "ecma5": {
+                    "enabled": true
+                },
+                "jQuery": {
+                    "enabled": true
+                }
+            }
+        }
+    },
+    "python": {
+        "@path": "/usr/local/lib/python3.4/dist-packages:/usr/local/lib/python3.5/dist-packages"
+    },
+    "robomaker": {
+        "@currentSimJobArn": "arn:aws:robomaker:us-east-1:661453023571:simulation-job/sim-cqb6wl9z59kr",
+        "@distribution": "Melodic",
+        "@manifestPath": ""
+    },
+    "run": {
+        "configs": {
+            "@inited": "true",
+            "json()": {
+                "Colcon Build": {
+                    "command": "source /opt/ros/melodic/setup.bash && rosdep install --from-paths src --ignore-src -r -y && colcon build",
+                    "name": "Colcon Build",
+                    "runner": "Shell command",
+                    "toolbar": true
+                },
+                "Colcon Bundle": {
+                    "command": "source /opt/ros/melodic/setup.bash && colcon bundle",
+                    "name": "Colcon Bundle",
+                    "runner": "Shell command",
+                    "toolbar": true
+                },
+                "Create simulation job (0468d184-4b33-0850-f65d-d40af3f47fee)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/58a4d00c-cbf4-a645-da16-540b0b2f7efb.log",
+                    "name": "Create simulation job (0468d184-4b33-0850-f65d-d40af3f47fee)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (071a6ce0-b654-9bf7-e6c2-f6f3842269c1)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/4c7f5fad-7154-11ef-b7ba-0999df23b5cd.log",
+                    "name": "Create simulation job (3562ddf4-0d44-5717-e7d5-f566b25fafab)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (0df3e592-a0a8-836d-b8a7-9f401e53e5fc)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/21328bd3-2142-58c9-3891-384d0d6acc19.log",
+                    "name": "Create simulation job (0df3e592-a0a8-836d-b8a7-9f401e53e5fc)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (1b14ec39-9a23-75c5-306f-4b2bdd71d838)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/a8818b21-bfe5-f4bc-24cf-38c693fd8a59.log",
+                    "name": "Create simulation job (1b14ec39-9a23-75c5-306f-4b2bdd71d838)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (1b3e1346-fd8b-f77f-ff9d-244b14a87d41)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/4124c004-cfd6-2ea9-03d7-af0b92214a13.log",
+                    "name": "Create simulation job (2afbbaf5-9014-8705-f7b6-31bff0b149b1)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (1bc31420-30c3-0dc1-4aa5-d10313abee1c)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/e37cef99-1d71-93db-7e46-ef64691e635a.log",
+                    "name": "Create simulation job (1bc31420-30c3-0dc1-4aa5-d10313abee1c)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (231ee6f0-fe2b-3d0e-9d0e-91637512cca5)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/8598278e-383f-60ad-f8ed-a58ade97b5f2.log",
+                    "name": "Create simulation job (231ee6f0-fe2b-3d0e-9d0e-91637512cca5)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (2afbbaf5-9014-8705-f7b6-31bff0b149b1)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/4124c004-cfd6-2ea9-03d7-af0b92214a13.log",
+                    "name": "Create simulation job (2afbbaf5-9014-8705-f7b6-31bff0b149b1)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (2ce2eb4c-b938-6ebc-2802-64e7da5a29ef)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/511d14c9-6dd1-ab6f-fd4c-d51743033834.log",
+                    "name": "Create simulation job (eea00c33-b6e7-b31f-a34d-455778b1c4b1)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (2f88ff35-e7e2-e02c-000d-9e251437a3eb)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/e8c33f76-6d80-6372-30a8-90933140c20d.log",
+                    "name": "Create simulation job (cd8295d2-3413-efdd-9cb4-2ee4652cd1dd)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (3562ddf4-0d44-5717-e7d5-f566b25fafab)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/4c7f5fad-7154-11ef-b7ba-0999df23b5cd.log",
+                    "name": "Create simulation job (3562ddf4-0d44-5717-e7d5-f566b25fafab)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (37994cf0-22b8-979d-aae9-0917c17670d3)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/01f3cebc-6b64-ab7b-3193-887b0bd67a74.log",
+                    "name": "Create simulation job (37994cf0-22b8-979d-aae9-0917c17670d3)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (3bd64098-65ce-7541-b611-dcafdc530cfa)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/da00d32f-9b78-04b8-4b89-0205d1aecfbf.log",
+                    "name": "Create simulation job (c8c819f1-509f-86b4-b59b-6c420c6eb3d4)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (40c2209c-1fc0-43ab-1fe2-3e66050d9688)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/f79e5bf7-ef58-c5f1-7ffb-27ec2e63e8dd.log",
+                    "name": "Create simulation job (40c2209c-1fc0-43ab-1fe2-3e66050d9688)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (51a44ffd-46b8-0a7f-8ce3-1442fecd3455)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/c7e78db4-16f3-b0ee-cbbd-678ed65d069e.log",
+                    "name": "Create simulation job (51a44ffd-46b8-0a7f-8ce3-1442fecd3455)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (53ebe803-85c5-664d-90f1-948ad25a1bb2)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/58a4d00c-cbf4-a645-da16-540b0b2f7efb.log",
+                    "name": "Create simulation job (0468d184-4b33-0850-f65d-d40af3f47fee)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (543ef70e-e2d0-9958-0629-ca554929d8a1)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/20f13e26-e0b2-cdc0-8b79-941af2cbe4a1.log",
+                    "name": "Create simulation job (40c2209c-1fc0-43ab-1fe2-3e66050d9688)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (54e3b2e6-347c-43eb-e56e-0a47ced77db0)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/b9fa5893-5eb0-a6e8-9ba5-ed052007f85c.log",
+                    "name": "Create simulation job (54e3b2e6-347c-43eb-e56e-0a47ced77db0)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (5b8c151c-5dde-6ca2-72a5-0a1603b393a9)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/5a26cf9a-fb30-7459-d71d-33a3a05d80b6.log",
+                    "name": "Create simulation job (5b8c151c-5dde-6ca2-72a5-0a1603b393a9)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (5f310ffa-b633-4060-b3c3-ccde0db93824)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/01f3cebc-6b64-ab7b-3193-887b0bd67a74.log",
+                    "name": "Create simulation job (5f310ffa-b633-4060-b3c3-ccde0db93824)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (6295b5e9-4bcd-a10e-13b0-f225693a70c8)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/002d8592-cc79-0f51-a2ff-894188b12a12.log",
+                    "name": "Create simulation job (5b02a717-f640-ec1a-2e73-a2cbab225b93)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (6e7ce859-877b-1351-293f-04704c3889c7)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/81c7dcfb-b99b-9429-002d-1a90fc052967.log",
+                    "name": "Create simulation job (6e7ce859-877b-1351-293f-04704c3889c7)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (6f31e6ab-10d7-4888-81b1-278aa12e16ea)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/32f28731-f2d0-05bd-c9c5-911056cef855.log",
+                    "name": "Create simulation job (6f31e6ab-10d7-4888-81b1-278aa12e16ea)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (7c7a33e5-3161-50a5-5813-97511577e331)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/e0715909-7800-8fcd-0005-9ee9f2ea9150.log",
+                    "name": "Create simulation job (7c7a33e5-3161-50a5-5813-97511577e331)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (812c2034-9d32-d323-3e92-4a62e9d88303)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/4c7f5fad-7154-11ef-b7ba-0999df23b5cd.log",
+                    "name": "Create simulation job (812c2034-9d32-d323-3e92-4a62e9d88303)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (895c7b1b-b7fc-729f-a486-62b479be97b1)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/dbc3d5b8-7e9a-5cd4-80a0-040cb09faecc.log",
+                    "name": "Create simulation job (895c7b1b-b7fc-729f-a486-62b479be97b1)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (93113103-6cef-210c-4913-d538646218dd)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/f3a85bf5-d49b-f2e2-5e29-0659239f8456.log",
+                    "name": "Create simulation job (93113103-6cef-210c-4913-d538646218dd)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (9656a741-1a88-fec0-489a-168bd51ad178)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/4fc872c6-66a1-8686-35b7-7a1db00e64a7.log",
+                    "name": "Create simulation job (9656a741-1a88-fec0-489a-168bd51ad178)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (a12ac3a1-9a89-508c-197d-0bb7082d0462)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/dbc3d5b8-7e9a-5cd4-80a0-040cb09faecc.log",
+                    "name": "Create simulation job (895c7b1b-b7fc-729f-a486-62b479be97b1)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (a4468df1-b552-cf6f-72b4-4ba8d765b609)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/bdcbd7eb-2bfb-fead-78fc-efd4e14e6167.log",
+                    "name": "Create simulation job (a4468df1-b552-cf6f-72b4-4ba8d765b609)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (aee5c7aa-428e-fd61-45fd-e66388090b69)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/ebefe3f8-0da4-600b-f4fd-3160c56c56a5.log",
+                    "name": "Create simulation job (aee5c7aa-428e-fd61-45fd-e66388090b69)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (b5bf5c8c-7f24-0e36-f2e5-4a1f5ed00d35)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/01f3cebc-6b64-ab7b-3193-887b0bd67a74.log",
+                    "name": "Create simulation job (b5bf5c8c-7f24-0e36-f2e5-4a1f5ed00d35)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (b7e84763-1756-c00f-b915-1b4c4f087915)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/8dc2c52e-70aa-ebc3-582f-17f6df53d0f7.log",
+                    "name": "Create simulation job (b7e84763-1756-c00f-b915-1b4c4f087915)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (c48f43ae-fa77-cc20-345a-c8059bb14e43)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/ac309d3a-e1f9-8b6d-b150-616da0cd0ae2.log",
+                    "name": "Create simulation job (c48f43ae-fa77-cc20-345a-c8059bb14e43)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (c67df9d1-7562-8ca4-6a9b-5b2e4b9f0316)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/ec2a4bc9-d06b-ae9e-4b3d-bbd3cc422b71.log",
+                    "name": "Create simulation job (c67df9d1-7562-8ca4-6a9b-5b2e4b9f0316)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (c7969a61-e9e1-3762-1a63-eca87b34e416)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/511d14c9-6dd1-ab6f-fd4c-d51743033834.log",
+                    "name": "Create simulation job (2ce2eb4c-b938-6ebc-2802-64e7da5a29ef)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (c8c819f1-509f-86b4-b59b-6c420c6eb3d4)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/da00d32f-9b78-04b8-4b89-0205d1aecfbf.log",
+                    "name": "Create simulation job (c8c819f1-509f-86b4-b59b-6c420c6eb3d4)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (d7edf83d-b670-6150-0679-444525ccb734)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/9080d604-5949-ffbf-e216-b7d52efe8136.log",
+                    "name": "Create simulation job (d7edf83d-b670-6150-0679-444525ccb734)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (e389d337-ace9-bc0d-fef1-0a0bbd08ed08)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/1aac137b-6def-2391-d125-e474831d7790.log",
+                    "name": "Create simulation job (9656a741-1a88-fec0-489a-168bd51ad178)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (e97758b4-ccc7-f2ac-7841-2af8e890a30f)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/9c0e4f6e-61db-29ef-87d8-fe7b8adfdb50.log",
+                    "name": "Create simulation job (e97758b4-ccc7-f2ac-7841-2af8e890a30f)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (ede45be2-5379-5b0f-f57e-12cddc07eca1)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/db328893-57c0-c24d-7d6c-41cd478fb329.log",
+                    "name": "Create simulation job (ede45be2-5379-5b0f-f57e-12cddc07eca1)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (eea00c33-b6e7-b31f-a34d-455778b1c4b1)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/60adc4d2-11ed-daa7-7c5c-b4fbde50716a.log",
+                    "name": "Create simulation job (eea00c33-b6e7-b31f-a34d-455778b1c4b1)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (eec79205-92f1-8f57-aec1-d6c88b5e789b)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/01f3cebc-6b64-ab7b-3193-887b0bd67a74.log",
+                    "name": "Create simulation job (5f310ffa-b633-4060-b3c3-ccde0db93824)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (f02b04fe-791f-9786-9187-2704eedd6a2f)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/56e4d314-db05-e466-2dbd-135672b99a48.log",
+                    "name": "Create simulation job (f02b04fe-791f-9786-9187-2704eedd6a2f)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                },
+                "Create simulation job (fe1204cb-b6f1-991f-1b82-083824139f64)": {
+                    "command": "tail -n 1000 -f /home/ubuntu/environment//roboMakerLogs/b04b4151-ea3c-30be-0313-c7ab1c0ca6f3.log",
+                    "name": "Create simulation job (fe1204cb-b6f1-991f-1b82-083824139f64)",
+                    "runner": "Shell command",
+                    "toolbar": false
+                }
+            }
+        }
+    },
+    "welcome": {
+        "@first": true
+    }
+}

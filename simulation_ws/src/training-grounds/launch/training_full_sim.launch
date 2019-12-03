@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+	<arg name="paused" default="false"/>
+	<arg name="use_sim_time" default="true"/>
+	<arg name="gui" default="true"/>
+	<arg name="headless" default="false"/>
+	<arg name="debug" default="false"/>
+    <arg name="world" default="$(find training_grounds)/worlds/basic.world"/>
+    <param name="MODEL_S3_BUCKET" value="$(env MODEL_S3_BUCKET)" />
+    <param name="MODEL_S3_PREFIX" value="$(env MODEL_S3_PREFIX)" />
+    <param name="ROS_AWS_REGION" value="$(env ROS_AWS_REGION)" />
+    <param name="JOB_TYPE" value="TRAINING" />
+
+
+	<include file="$(find gazebo_ros)/launch/empty_world.launch">
+		<arg name="world_name" value="$(arg world)"/>
+		<arg name="debug" value="$(arg debug)" />
+		<arg name="gui" value="$(arg gui)" />
+		<arg name="paused" value="$(arg paused)"/>
+		<arg name="use_sim_time" value="$(arg use_sim_time)"/>
+		<arg name="headless" value="$(arg headless)"/>
+    </include>
+
+	<include file="$(find training_grounds)/launch/training_gear.launch"/>
+	<include file="$(find training_grounds)/launch/rover_training_env.launch"/>
+	<node name="agent" pkg="training_grounds" type="run_local_rl_agent.sh" output="screen" required="true"/>
+</launch>

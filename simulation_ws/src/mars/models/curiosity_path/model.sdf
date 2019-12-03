@@ -1,0 +1,35 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+  <model name="curiosity_path">
+      <static>true</static>
+      <link name='link'>
+       <collision name="collision">
+        <geometry>
+            <mesh>
+              <uri>model://curiosity_path/meshes/curiosity_path25k.stl</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+        </geometry>
+        <surface>
+          <contact>
+             <collide_bitmask>0xffff</collide_bitmask>
+          </contact>
+          <friction>
+            <ode>
+              <mu>100</mu>
+              <mu2>50</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://curiosity_path/meshes/curiosity_path25k.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>   
+  </model>
+</sdf>

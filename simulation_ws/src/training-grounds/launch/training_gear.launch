@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<launch>
+    <arg name="x" default="0.6" />
+    <arg name="y" default="0.0" />
+    <arg name="z" default="1.0" />
+    <arg name="yaw" default="0.0" />
+    <arg name="roll" default="0.0" />
+    <arg name="pitch" default="0.0"/>
+    <arg name="sdf_robot_file" value="$(find training_grounds)/models/monolith/monolith.sdf"/>
+    <arg name="robot_name" value="monolith1" />
+
+
+    <node name="$(arg robot_name)_spawn_urdf"
+		pkg="gazebo_ros"
+		type="spawn_model"
+		respawn="false"
+		output="screen"
+        	args="-file $(arg sdf_robot_file) -sdf -x .6 -y 0 -z 1.0  -R 0 -P 0 -Y 0 -model $(arg robot_name)"/>
+
+
+    <node name="monolith2_spawn_urdf"
+		pkg="gazebo_ros"
+		type="spawn_model"
+		respawn="false"
+		output="screen"
+        	args="-file $(arg sdf_robot_file) -sdf -x -4 -y 6 -z 1.0  -R 0 -P 0 -Y 0 -model monolith2"/>
+
+    <node name="monolith3_spawn_urdf"
+		pkg="gazebo_ros"
+		type="spawn_model"
+		respawn="false"
+		output="screen"
+        	args="-file $(arg sdf_robot_file) -sdf -x 3 -y -3 -z 1.0  -R 0 -P 0 -Y 0 -model monolith3"/>
+
+    <node name="monolith4_spawn_urdf"
+		pkg="gazebo_ros"
+		type="spawn_model"
+		respawn="false"
+		output="screen"
+        	args="-file $(arg sdf_robot_file) -sdf -x 7 -y 1 -z 1.0  -R 0 -P 0 -Y 0 -model monolith4"/>
+
+    <node name="monolith5_spawn_urdf"
+		pkg="gazebo_ros"
+		type="spawn_model"
+		respawn="false"
+		output="screen"
+        	args="-file $(arg sdf_robot_file) -sdf -x -7 -y -4 -z 1.0  -R 0 -P 0 -Y 0 -model monolith5"/>
+
+    <node name="monolith6_spawn_urdf"
+		pkg="gazebo_ros"
+		type="spawn_model"
+		respawn="false"
+		output="screen"
+        	args="-file $(arg sdf_robot_file) -sdf -x 5 -y -1 -z 1.0  -R 0 -P 0 -Y 0 -model monolith6"/>
+
+    <node name="monolith7_spawn_urdf"
+		pkg="gazebo_ros"
+		type="spawn_model"
+		respawn="false"
+		output="screen"
+        	args="-file $(arg sdf_robot_file) -sdf -x -3 -y 0 -z 1.0  -R 0 -P 0 -Y 0 -model monolith7"/>
+
+    <node name="monolith8_spawn_urdf"
+		pkg="gazebo_ros"
+		type="spawn_model"
+		respawn="false"
+		output="screen"
+        	args="-file $(arg sdf_robot_file) -sdf -x 2 -y 5 -z 1.0  -R 0 -P 0 -Y 0 -model monolith8"/>
+
+     <node name="monolith9_spawn_urdf"
+		pkg="gazebo_ros"
+		type="spawn_model"
+		respawn="false"
+		output="screen"
+        	args="-file $(arg sdf_robot_file) -sdf -x .5 -y -4 -z 1.0  -R 0 -P 0 -Y 0 -model monolith9"/>
+
+	<node name="monolith10_spawn_urdf"
+		pkg="gazebo_ros"
+		type="spawn_model"
+		respawn="false"
+		output="screen"
+        	args="-file $(arg sdf_robot_file) -sdf -x -7 -y -3 -z 1.0  -R 0 -P 0 -Y 0 -model monolith10"/>
+
+	<node name="monolith11_spawn_urdf"
+		pkg="gazebo_ros"
+		type="spawn_model"
+		respawn="false"
+		output="screen"
+        	args="-file $(arg sdf_robot_file) -sdf -x 3 -y -8 -z 1.0  -R 0 -P 0 -Y 0 -model monolith11"/>
+
+	<node name="monolith12_spawn_urdf"
+		pkg="gazebo_ros"
+		type="spawn_model"
+		respawn="false"
+		output="screen"
+        	args="-file $(arg sdf_robot_file) -sdf -x 6 -y -7 -z 1.0  -R 0 -P 0 -Y 0 -model monolith12"/>
+
+
+	<node name="monolith13_spawn_urdf"
+		pkg="gazebo_ros"
+		type="spawn_model"
+		respawn="false"
+		output="screen"
+	    	args="-file $(arg sdf_robot_file) -sdf -x 8 -y -1 -z .25  -R 0 -P 1.55 -Y 0 -model monolith13"/>
+
+
+
+</launch>

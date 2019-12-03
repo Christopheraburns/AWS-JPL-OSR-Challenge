@@ -1,0 +1,24 @@
+<sdf version="1.5">
+  <world name="default">
+
+    <light type="directional" name="directional_light_1">
+      <pose>0 20 20 0.1 0.1 0</pose>
+      <diffuse rgba=".5 .5 .5 1"/>
+      <specular rgba=".5 .5 .5 1"/>
+      <attenuation>
+        <range>300</range>
+      </attenuation>
+      <direction>0.1 0.1 -1</direction>
+      <cast_shadows>false</cast_shadows>
+    </light>
+
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+  </world>
+</sdf>

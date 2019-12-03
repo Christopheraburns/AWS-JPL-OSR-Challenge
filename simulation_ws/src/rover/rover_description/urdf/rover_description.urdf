@@ -1,0 +1,1206 @@
+<?xml version="1.0" ?>
+<robot name="rover_description">
+<!-- xmlns:xacro="http://ros.org/wiki/xacro" -->
+  <!-- All joints except wheels should be revolute eventually with limits put in, instead
+  of continous joints -->
+
+  <!-- Body -->
+  <link name="body">
+    <inertial>
+      <mass value="2.90211432884294"/>
+      <origin rpy="0  0  0" xyz="0  0  0"/>
+      <inertia ixx="0.0449848823959673" ixy="0.00479068637492494" ixz="0.00169663977998625" iyy="0.036095517853809" iyz="0.00496816410158067" izz="0.0468326609946258"/>
+    </inertial>
+    <collision name="body_collision">
+      <origin rpy="1.57079 -0.0741   0" xyz="0.06131  0.25841 -0.36404"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/body.STL" scale="1 1 1"/>
+      </geometry>
+    </collision>
+    <visual name="body_visual">
+      <origin rpy="1.57079 -0.0741   0" xyz="0.06131  0.25841 -0.36404"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/body.dae" scale="1 1 1"/>
+      </geometry>
+    </visual>
+  </link>
+  <gazebo reference="body">
+  <!-- contact sensor -->
+    <sensor type="contact" name="body_contact_sensor">
+      <update_rate>30.0</update_rate>
+      <always_on>1</always_on>
+      <contact>
+        <collision>body_collision_collision</collision>
+        <topic>/bumper_contact</topic>
+      </contact>
+      <plugin name="gazebo_ros_bumper_controller" filename="libgazebo_ros_bumper.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>3.0</updateRate>
+          <bumperTopicName>/robot_bumper</bumperTopicName>
+          <frameName>body</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- LIDAR -->
+  <link name="base_scan">
+    <!--<visual>
+      <origin xyz="-.075 0.03 -.075" rpy="0 -0.275 0"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/lds.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="dark"/>
+    </visual>
+    <collision>
+      <origin xyz="0.05 0.03 -0.5125" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="0.0315" radius="0.055"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.114" />
+      <origin xyz="0 0 0" />
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0"
+               iyy="0.001" iyz="0.0"
+               izz="0.001" />
+    </inertial>-->
+  </link>
+  <joint name="scan_joint" type="fixed">
+    <parent link="body"/>
+    <child link="base_scan"/>
+    <origin xyz="-.075 0.03 -.075" rpy="0 -0.275 0"/>
+  </joint>
+  <gazebo reference="base_scan">
+    <sensor type="ray" name="lds_lfcd_sensor">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>false</visualize>
+      <update_rate>5</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>360</samples>
+            <resolution>1</resolution>
+            <min_angle>-90</min_angle>
+            <max_angle>90</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.45</min>
+          <max>4.5</max>
+          <resolution>0.015</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin name="gazebo_ros_lds_lfcd_controller" filename="libgazebo_ros_laser.so">
+        <topicName>scan</topicName>
+        <frameName>base_scan</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- Depth Camera -->
+  <link name="depthcamera_link">
+    <collision>
+      <origin xyz="-0.01 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="depthcamera_joint" type="fixed">
+    <axis xyz="0 0 0" />
+    <origin xyz="-0.1 0 0" rpy="0 0 3.14"/>
+    <parent link="body"/>
+    <child link="depthcamera_link"/>
+  </joint>
+  <gazebo reference="depthcamera_link">
+    <sensor name="depthcamera" type="depth">
+      <update_rate>10.0</update_rate>
+      <camera>
+        <horizontal_fov>1.047198</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.05</near>
+          <far>3</far>
+        </clip>
+      </camera>
+      <plugin name="depthcamera_controller" filename="libgazebo_ros_openni_kinect.so">
+        <baseline>0.2</baseline>
+        <alwaysOn>true</alwaysOn>
+        <updateRate>1.0</updateRate>
+        <cameraName>depthcamera</cameraName>
+        <imageTopicName>/depthcamera/depth/image_raw</imageTopicName>
+        <cameraInfoTopicName>/depthcamera/depth/camera_info</cameraInfoTopicName>
+        <depthImageTopicName>/depthcamera/depth/image_raw</depthImageTopicName>
+        <depthImageInfoTopicName>/depthcamera/depth/camera_info</depthImageInfoTopicName>
+        <pointCloudTopicName>/depthcamera/depth/points</pointCloudTopicName>
+        <frameName>pointcloud_link</frameName>
+        <pointCloudCutoff>0.5</pointCloudCutoff>
+        <pointCloudCutoffMax>3.0</pointCloudCutoffMax>
+        <distortionK1>0.00000001</distortionK1>
+        <distortionK2>0.00000001</distortionK2>
+        <distortionK3>0.00000001</distortionK3>
+        <distortionT1>0.00000001</distortionT1>
+        <distortionT2>0.00000001</distortionT2>
+        <CxPrime>0</CxPrime>
+        <Cx>0</Cx>
+        <Cy>0</Cy>
+        <focalLength>0</focalLength>
+        <hackBaseline>0</hackBaseline>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- Point Cloud -->
+  <link name="pointcloud_link"/>
+  <joint name="pointcloud_joint" type="fixed">
+    <axis xyz="0 0 0" />
+    <origin xyz="-0.1 0 0" rpy="-1.58 0 -1.58"/>
+    <parent link="depthcamera_link"/>
+    <child link="pointcloud_link"/>
+  </joint>
+
+  <!-- Camera -->
+  <link name="camera_link">
+    <collision>
+      <origin xyz="-0.01 0 0" rpy="0 0 3.14"/>
+      <geometry>
+        <box size="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="camera_joint" type="fixed">
+    <axis xyz="0 1 0" />
+    <origin xyz="-0.1 0 0" rpy="0 0 3.14"/>
+    <parent link="body"/>
+    <child link="camera_link"/>
+  </joint>
+  <gazebo reference="camera_link">
+    <sensor type="camera" name="camera1">
+      <update_rate>30.0</update_rate>
+      <camera name="head">
+        <horizontal_fov>1.30</horizontal_fov>
+        <image>
+          <width>360</width>
+          <height>240</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <!-- Noise is sampled independently per pixel on each frame.
+               That pixel's noise value is added to each of its color
+               channels, which at that point lie in the range [0,1]. -->
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>camera</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>camera_link</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- IMU -->
+  <link name="imu_link"/>
+  <joint name="imu_joint" type="fixed">
+    <parent link="body"/>
+    <child link="imu_link"/>
+    <origin xyz="-0.032 0 0.068" rpy="0 0 3.14"/>
+  </joint>
+  <gazebo reference="imu_link">
+    <sensor type="imu" name="imu">
+      <always_on>true</always_on>
+    </sensor>
+  </gazebo>
+
+  <!-- Body - Rocker Joints  -->
+  <!-- Both of the joints from body to the rocker are currently locked, to be replaced
+  eventually with accel position controlled revolute joints -->
+  <link name="rocker_left">
+    <inertial>
+      <mass value="0.537822360381466"/>
+      <origin rpy="0  0  0" xyz="0  0  0"/>
+      <inertia ixx="0.000926946219362228" ixy="0.000154689420267511" ixz="1.88012800941391E-05" iyy="0.0101156034157955" iyz="5.30969443231385E-06" izz="0.0107753595914698"/>
+    </inertial>
+    <collision name="rocker_left_collision">
+      <origin rpy="-3.13761 -1.57079  3.14159" xyz="0.42337 -0.05944  0.05707"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/rocker_left.STL" scale="1 1 1"/>
+      </geometry>
+    </collision>
+    <visual name="rocker_left_visual">
+      <origin rpy="-3.13761 -1.57079  3.14159" xyz="0.42337 -0.05944  0.05707"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/rocker_left.dae" scale="1 1 1"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="body_rocker_left" type="continuous">
+    <parent link="body"/>
+    <child link="rocker_left"/>
+    <origin rpy="1.49669  0 1.57079" xyz="0 -0.16496 -0.30899"/>
+    <axis xyz="0  1  0"/>
+    <limit effort="1.0" lower="0.0" upper="0.0" velocity="0.0"/>
+  </joint>
+  <transmission name="tran_body_rocker_left">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="body_rocker_left">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_body_rocker_left">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <gazebo reference="rocker_left">
+  <!-- contact sensor -->
+    <sensor type="contact" name="rocker_left_contact_sensor">
+      <update_rate>30.0</update_rate>
+      <always_on>1</always_on>
+      <contact>
+        <collision>rocker_left_collision_collision</collision>
+        <topic>/bumper_contact</topic>
+      </contact>
+      <plugin name="gazebo_ros_bumper_controller" filename="libgazebo_ros_bumper.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>3.0</updateRate>
+          <bumperTopicName>/robot_bumper</bumperTopicName>
+          <frameName>rocker_left</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <link name="rocker_right">
+    <inertial>
+      <mass value="0.526238554618689"/>
+      <origin rpy="0  0  0" xyz="0  0  0"/>
+      <inertia ixx="0.000919588633616726" ixy="0.000157243014711518" ixz="1.51548266970927E-05" iyy="0.00982887921832842" iyz="5.68327172250142E-06" izz="0.01048548744125"/>
+    </inertial>
+    <collision name="rocker_right_collision">
+      <origin rpy="0  0  0" xyz="0.05707 -0.05944 -0.0935"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/rocker_right.STL" scale="1 1 1"/>
+      </geometry>
+    </collision>
+    <visual name="rocker_right_visual">
+      <origin rpy="0  0  0" xyz="0.05707 -0.05944 -0.0935"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/rocker_right.dae" scale="1 1 1"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="body_rocker_right" type="continuous">
+    <parent link="body"/>
+    <child link="rocker_right"/>
+    <origin rpy="1.57079 -0.0741   0" xyz="0       0.1649  -0.30899"/>
+    <axis xyz="0  0  -1"/>
+    <limit effort="1.0" lower="0.0" upper="0.0" velocity="0.0"/>
+  </joint>
+  <transmission name="tran_body_rocker_right">
+  <type>transmission_interface/SimpleTransmission</type>
+    <joint name="body_rocker_right">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_body_rocker_right">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <gazebo reference="rocker_right">
+  <!-- contact sensor -->
+    <sensor type="contact" name="rocker_right_contact_sensor">
+      <update_rate>30.0</update_rate>
+      <always_on>1</always_on>
+      <contact>
+        <collision>rocker_right_collision_collision</collision>
+        <topic>/bumper_contact</topic>
+      </contact>
+      <plugin name="gazebo_ros_bumper_controller" filename="libgazebo_ros_bumper.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>3.0</updateRate>
+          <bumperTopicName>/robot_bumper</bumperTopicName>
+          <frameName>rocker_right</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- Rocker - Bogie Joints -->
+  <link name="bogie_right">
+    <inertial>
+      <mass value="0.621260139018214"/>
+      <origin rpy="0  0  0" xyz="0  0  0"/>
+      <inertia ixx="0.00453008397919647" ixy="0.00490350467843443" ixz="0.000635833755568301" iyy="0.00836086403351998" iyz="0.000607789161715965" izz="0.0121912838568506"/>
+    </inertial>
+    <collision name="bogie_right_collision">
+      <origin rpy="0  0  0" xyz="0.25249  0.02578 -0.0854"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/bogie_right.STL" scale="1 1 1"/>
+      </geometry>
+    </collision>
+    <visual name="bogie_right_visual">
+      <origin rpy="0  0  0" xyz="0.25249  0.02578 -0.0854"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/bogie_right.dae" scale="1 1 1"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="rocker_right_bogie_right" type="continuous">
+    <parent link="rocker_right"/>
+    <child link="bogie_right"/>
+    <origin rpy="0  0  0" xyz="-0.19542 -0.08523 -0.0081"/>
+    <axis xyz="0  0  1"/>
+    <limit effort="1.0" lower="0.0" upper="0.0" velocity="0.0"/>
+  </joint>
+  <transmission name="tran_rocker_right_bogie_right">
+  <type>transmission_interface/SimpleTransmission</type>
+    <joint name="rocker_right_bogie_right">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_rocker_right_bogie_right">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <gazebo reference="bogie_right">
+  <!-- contact sensor -->
+    <sensor type="contact" name="bogie_right_contact_sensor">
+      <update_rate>30.0</update_rate>
+      <always_on>1</always_on>
+      <contact>
+        <collision>bogie_right_collision_collision</collision>
+        <topic>/bumper_contact</topic>
+      </contact>
+      <plugin name="gazebo_ros_bumper_controller" filename="libgazebo_ros_bumper.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>3.0</updateRate>
+          <bumperTopicName>/robot_bumper</bumperTopicName>
+          <frameName>bogie_right</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <link name="bogie_left">
+    <inertial>
+      <mass value="0.621260123725714"/>
+      <origin rpy="0  0  0" xyz="0  0  0"/>
+      <inertia ixx="0.00448582964435196" ixy="0.00477854316506496" ixz="0.000607059717079686" iyy="0.00810724571548189" iyz="0.000593845967857872" izz="0.0118998802046071"/>
+    </inertial>
+    <collision name="bogie_left_collision">
+      <origin rpy="0  0  0" xyz="0.25249  0.02578 -0.43123"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/bogie_left.STL" scale="1 1 1"/>
+      </geometry>
+    </collision>
+    <visual name="bogie_left_visual">
+      <origin rpy="0  0  0" xyz="0.25249  0.02578 -0.43123"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/bogie_left.dae" scale="1 1 1"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="rocker_left_bogie_left" type="continuous">
+    <parent link="rocker_left"/>
+    <child link="bogie_left"/>
+    <origin rpy="-3.13761 -1.57079  3.14159" xyz="-0.00786 -0.08523 -0.19542"/>
+    <axis xyz="0  0  1"/>
+    <limit effort="1.0" lower="0.0" upper="0.0" velocity="0.0"/>
+  </joint>
+  <transmission name="tran_rocker_left_bogie_left">
+  <type>transmission_interface/SimpleTransmission</type>
+    <joint name="rocker_left_bogie_left">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_rocker_left_bogie_left">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <gazebo reference="bogie_left">
+  <!-- contact sensor -->
+    <sensor type="contact" name="bogie_left_contact_sensor">
+      <update_rate>30.0</update_rate>
+      <always_on>1</always_on>
+      <contact>
+        <collision>bogie_left_collision_collision</collision>
+        <topic>/bumper_contact</topic>
+      </contact>
+      <plugin name="gazebo_ros_bumper_controller" filename="libgazebo_ros_bumper.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>3.0</updateRate>
+          <bumperTopicName>/robot_bumper</bumperTopicName>
+          <frameName>bogie_left</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- Corner Wheel Axles -->
+  <link name="corner_lb">
+    <inertial>
+      <mass value="0.304192795804708"/>
+      <origin rpy="0  0  0" xyz="0  0  0"/>
+      <inertia ixx="0.00137497903125049" ixy="0.000122975014897575" ixz="1.73923564200588E-05" iyy="0.000373444568404697" iyz="0.000113334138690249" izz="0.00113647893801937"/>
+    </inertial>
+    <collision name="corner_lb_collision">
+      <origin rpy="0  0  0" xyz="-0.11444  0.11112 -0.42351"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/corner_lb.STL" scale="1 1 1"/>
+      </geometry>
+    </collision>
+    <visual name="corner_lb_visual">
+      <origin rpy="0  0  0" xyz="-0.11444  0.11112 -0.42351"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/corner_lb.dae" scale="1 1 1"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="rocker_left_corner_lb" type="continuous">
+    <parent link="rocker_left"/>
+    <child link="corner_lb"/>
+    <origin rpy="-3.13761 -1.57079  3.14159" xyz="-1.30000000e-04  -1.70570000e-01   1.71510000e-01"/>
+    <axis xyz="-0.11836 -0.99297  0"/>
+    <limit effort="1.0" lower="0.0" upper="0.0" velocity="0.5"/>
+  </joint>
+  <transmission name="rocker_left_corner_lb">
+  <type>transmission_interface/SimpleTransmission</type>
+    <joint name="rocker_left_corner_lb">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="rocker_left_corner_lb">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <gazebo reference="corner_lb">
+  <!-- contact sensor -->
+    <sensor type="contact" name="corner_lb_contact_sensor">
+      <update_rate>30.0</update_rate>
+      <always_on>1</always_on>
+      <contact>
+        <collision>corner_lb_collision_collision</collision>
+        <topic>/bumper_contact</topic>
+      </contact>
+      <plugin name="gazebo_ros_bumper_controller" filename="libgazebo_ros_bumper.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>3.0</updateRate>
+          <bumperTopicName>/robot_bumper</bumperTopicName>
+          <frameName>corner_lb</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <link name="corner_rb">
+    <inertial>
+      <mass value="0.304193014419549"/>
+      <origin rpy="0  0  0" xyz="0  0  0"/>
+      <inertia ixx="0.00137604856074308" ixy="0.000117918040254742" ixz="6.30848933323842E-06" iyy="0.000372223836966267" iyz="0.000114619641084986" izz="0.00113663144325077"/>
+    </inertial>
+    <collision name="corner_rb_collision">
+      <origin rpy="0  0  0" xyz="-0.11436  0.11182 -0.09331"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/corner_rb.STL" scale="1 1 1"/>
+      </geometry>
+    </collision>
+    <visual name="corner_rb_visual">
+      <origin rpy="0  0  0" xyz="-0.11436  0.11182 -0.09331"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/corner_rb.dae" scale="1 1 1"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="rocker_right_corner_rb" type="continuous">
+    <parent link="rocker_right"/>
+    <child link="corner_rb"/>
+    <origin rpy="0  0  0" xyz="0.17143 -0.17127 -0.00019"/>
+    <axis xyz="-0.11836 -0.99297  0"/>
+    <limit effort="1.0" lower="0.0" upper="0.0" velocity="0.5"/>
+  </joint>
+  <transmission name="tran_rocker_right_corner_rb">
+  <type>transmission_interface/SimpleTransmission</type>
+    <joint name="rocker_right_corner_rb">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_rocker_right_corner_rb">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <gazebo reference="corner_rb">
+  <!-- contact sensor -->
+    <sensor type="contact" name="corner_rb_contact_sensor">
+      <update_rate>30.0</update_rate>
+      <always_on>1</always_on>
+      <contact>
+        <collision>corner_rb_collision_collision</collision>
+        <topic>/bumper_contact</topic>
+      </contact>
+      <plugin name="gazebo_ros_bumper_controller" filename="libgazebo_ros_bumper.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>3.0</updateRate>
+          <bumperTopicName>/robot_bumper</bumperTopicName>
+          <frameName>corner_rb</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <link name="corner_lf">
+    <inertial>
+      <mass value="0.30419279796899"/>
+      <origin rpy="0  0  0" xyz="0  0  0"/>
+      <inertia ixx="0.00138425201204908" ixy="7.62004903383712E-05" ixz="8.45009232315926E-06" iyy="0.000364230221103759" iyz="0.000114298464981525" izz="0.00113642031217947"/>
+    </inertial>
+    <collision name="corner_lf_collision">
+      <origin rpy="0  0  0" xyz="0.44631  0.10755 -0.42351"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/corner_lf.STL" scale="1 1 1"/>
+      </geometry>
+    </collision>
+    <visual name="corner_lf_visual">
+      <origin rpy="0  0  0" xyz="0.44631  0.10755 -0.42351"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/corner_lf.dae" scale="1 1 1"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="bogie_left_corner_lf" type="continuous">
+    <parent link="bogie_left"/>
+    <child link="corner_lf"/>
+    <origin rpy="0  0  0" xyz="-0.19381 -0.08177 -0.00772"/>
+    <axis xyz="-0.07403 -0.99725  0"/>
+    <limit effort="1.0" lower="0.0" upper="0.0" velocity="0.5"/>
+  </joint>
+  <transmission name="tran_bogie_left_corner_lf">
+  <type>transmission_interface/SimpleTransmission</type>
+    <joint name="bogie_left_corner_lf">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_bogie_left_corner_lf">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <gazebo reference="corner_lf">
+  <!-- contact sensor -->
+    <sensor type="contact" name="corner_lf_contact_sensor">
+      <update_rate>30.0</update_rate>
+      <always_on>1</always_on>
+      <contact>
+        <collision>corner_lf_collision_collision</collision>
+        <topic>/bumper_contact</topic>
+      </contact>
+      <plugin name="gazebo_ros_bumper_controller" filename="libgazebo_ros_bumper.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>3.0</updateRate>
+          <bumperTopicName>/robot_bumper</bumperTopicName>
+          <frameName>corner_lf</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <link name="corner_rf">
+    <inertial>
+      <mass value="0.304192937405648"/>
+      <origin rpy="0  0  0" xyz="0  0  0"/>
+      <inertia ixx="0.00138454085524249" ixy="7.30921983173066E-05" ixz="1.85037600771367E-06" iyy="0.000363767178107023" iyz="0.000114746905570395" izz="0.00113659514671257"/>
+    </inertial>
+    <collision name="corner_rf_collision">
+      <origin rpy="0  0  0" xyz="0.44631  0.10755 -0.09331"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/corner_rf.STL" scale="1 1 1"/>
+      </geometry>
+    </collision>
+    <visual name="corner_rf_visual">
+      <origin rpy="0  0  0" xyz="0.44631  0.10755 -0.09331"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/corner_rf.dae" scale="1 1 1"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="bogie_right_corner_rf" type="continuous">
+    <parent link="bogie_right"/>
+    <child link="corner_rf"/>
+    <origin rpy="0  0  0" xyz="-0.19381 -0.08177  0.00791"/>
+    <axis xyz="-0.07403 -0.99725  0"/>
+    <limit effort="1.0" lower="0.0" upper="0.0" velocity="0.5"/>
+  </joint>
+  <transmission name="tran_bogie_right_corner_rf">
+  <type>transmission_interface/SimpleTransmission</type>
+    <joint name="bogie_right_corner_rf">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_bogie_right_corner_rf">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <gazebo reference="corner_rf">
+  <!-- contact sensor -->
+    <sensor type="contact" name="corner_rf_contact_sensor">
+      <update_rate>30.0</update_rate>
+      <always_on>1</always_on>
+      <contact>
+        <collision>corner_rf_collision_collision</collision>
+        <topic>/bumper_contact</topic>
+      </contact>
+      <plugin name="gazebo_ros_bumper_controller" filename="libgazebo_ros_bumper.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>3.0</updateRate>
+          <bumperTopicName>/robot_bumper</bumperTopicName>
+          <frameName>corner_rf</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+
+  <!-- Wheels & Wheel Joints -->
+  <!-- ********************* -->
+  <!-- Left Front -->
+  <link name="wheel_lf">
+    <inertial>
+      <mass value="1.36814541772104"/>
+      <origin rpy="0  0  0" xyz="0  0  0"/>
+      <inertia ixx="0.00366757842706366" ixy="5.85720342850908E-08" ixz="2.50671787696599E-08" iyy="0.00366756055024513" iyz="1.97671629579764E-08" izz="0.00544768606338861"/>
+    </inertial>
+    <collision name="wheel_lf_collision">
+      <origin rpy="0  0  0" xyz="0.41838  0.19698 -0.43356"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/wheel_lf.STL" scale="1 1 1"/>
+      </geometry>
+    </collision>
+    <visual name="wheel_lf_visual">
+      <origin rpy="0  0  0" xyz="0.41838  0.19698 -0.43356"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/wheel_lf.dae" scale="1 1 1"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="corner_lf_wheel_lf" type="continuous">
+    <parent link="corner_lf"/>
+    <child link="wheel_lf"/>
+    <origin rpy="0  0  0" xyz="0.02792 -0.08943  0.01005"/>
+    <axis xyz="0  0  1"/>
+    <limit effort="1.0" lower="0.0" upper="0.0" velocity="0.0"/>
+  </joint>
+  <transmission name="tran_corner_lf_wheel_lf">
+  <type>transmission_interface/SimpleTransmission</type>
+    <joint name="corner_lf_wheel_lf">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_corner_lf_wheel_lf">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <link name="imu_wheel_lf_link"/>
+  <joint name="imu_wheel_lf_joint" type="fixed">
+    <parent link="corner_lf"/>
+    <child link="imu_wheel_lf_link"/>
+    <origin xyz="0.028 -0.089 0.01" rpy="-1.58 0 0"/>
+  </joint>
+  <gazebo reference="imu_wheel_lf_link">
+    <sensor type="imu" name="imu">
+      <always_on>true</always_on>
+    </sensor>
+  </gazebo>
+
+  <!-- Left Middle -->
+  <link name="wheel_lm">
+    <inertial>
+      <mass value="1.36814459544853"/>
+      <origin rpy="0  0  0" xyz="0  0  0"/>
+      <inertia ixx="0.00366760387180507" ixy="4.81810951683874E-08" ixz="1.99015719689065E-08" iyy="0.0036675347611647" iyz="2.50805190292173E-08" izz="0.00544768572107024"/>
+    </inertial>
+    <collision name="wheel_lm_collision">
+      <origin rpy="0  0  0" xyz="0.14798  0.20486 -0.50951"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/wheel_lm.STL" scale="1 1 1"/>
+      </geometry>
+    </collision>
+    <visual name="wheel_lm_visual">
+      <origin rpy="0  0  0" xyz="0.14798  0.20486 -0.50951"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/wheel_lm.dae" scale="1 1 1"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="bogie_left_wheel_lm" type="continuous">
+    <parent link="bogie_left"/>
+    <child link="wheel_lm"/>
+    <origin rpy="0  0  0" xyz="0.10451 -0.17908  0.07827"/>
+    <axis xyz="0  0  1"/>
+    <limit effort="1.0" lower="0.0" upper="0.0" velocity="0.0"/>
+  </joint>
+  <transmission name="tran_bogie_left_wheel_lm">
+  <type>transmission_interface/SimpleTransmission</type>
+    <joint name="bogie_left_wheel_lm">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_bogie_left_wheel_lm">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <link name="imu_wheel_lm_link"/>
+  <joint name="imu_wheel_lm_joint" type="fixed">
+    <parent link="bogie_left"/>
+    <child link="imu_wheel_lm_link"/>
+    <origin xyz="0.105 -0.179 0.078" rpy="-1.58 0 0"/>
+  </joint>
+  <gazebo reference="imu_wheel_lm_link">
+    <sensor type="imu" name="imu">
+      <always_on>true</always_on>
+    </sensor>
+  </gazebo>
+
+  <!-- Left Back -->
+  <link name="wheel_lb">
+    <inertial>
+      <mass value="1.36814584269008"/>
+      <origin rpy="0  0  0" xyz="0  0  0"/>
+      <inertia ixx="0.00366793735984657" ixy="1.26412034924647E-08" ixz="2.71592687297528E-05" iyy="0.00366762213892166" iyz="3.23854253381849E-06" izz="0.00544726588808494"/>
+    </inertial>
+    <collision name="wheel_lb_collision">
+      <origin rpy="0  0  0" xyz="-0.15482  0.17979 -0.42848"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/wheel_lb.STL" scale="1 1 1"/>
+      </geometry>
+    </collision>
+    <visual name="wheel_lb_visual">
+      <origin rpy="0  0  0" xyz="-0.15482  0.17979 -0.42848"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/wheel_lb.dae" scale="1 1 1"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="corner_lb_wheel_lb" type="continuous">
+    <parent link="corner_lb"/>
+    <child link="wheel_lb"/>
+    <origin rpy="0  0  0" xyz="0.04037 -0.06867  0.00497"/>
+    <axis xyz="0.01524 -0.00181  0.99988"/>
+    <limit effort="1.0" lower="0.0" upper="0.0" velocity="0.0"/>
+  </joint>
+  <transmission name="tran_corner_lb_wheel_lb">
+  <type>transmission_interface/SimpleTransmission</type>
+    <joint name="corner_lb_wheel_lb">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_corner_lb_wheel_lb">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <link name="imu_wheel_lb_link"/>
+  <joint name="imu_wheel_lb_joint" type="fixed">
+    <parent link="corner_lb"/>
+    <child link="imu_wheel_lb_link"/>
+    <origin xyz="0.04 -0.069 0.005" rpy="-1.58 0 0"/>
+  </joint>
+  <gazebo reference="imu_wheel_lb_link">
+    <sensor type="imu" name="imu">
+      <always_on>true</always_on>
+    </sensor>
+  </gazebo>
+
+  <!-- Right Front -->
+  <link name="wheel_rf">
+    <inertial>
+      <mass value="1.36814501281761"/>
+      <origin rpy="0  0  0" xyz="0  0  0"/>
+      <inertia ixx="0.00366885695412576" ixy="6.90349334971186E-08" ixz="4.68184360413593E-05" iyy="0.00366752077491027" iyz="3.4445797472734E-06" izz="0.00544644696887958"/>
+    </inertial>
+    <collision name="wheel_rf_collision">
+      <origin rpy="0  0  0" xyz="0.44223  0.20838 -0.08295"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/wheel_rf.STL" scale="1 1 1"/>
+      </geometry>
+    </collision>
+    <visual name="wheel_rf_visual">
+      <origin rpy="0  0  0" xyz="0.44223  0.20838 -0.08295"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/wheel_rf.dae" scale="1 1 1"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="corner_rf_wheel_rf" type="continuous">
+    <parent link="corner_rf"/>
+    <child link="wheel_rf"/>
+    <origin rpy="0  0  0" xyz="0.00407 -0.10082 -0.01036"/>
+    <axis xyz="-0.02631  0.00195 -0.99965"/>
+    <limit effort="1.0" lower="0.0" upper="0.0" velocity="0.0"/>
+  </joint>
+  <transmission name="tran_corner_rf_wheel_rf">
+  <type>transmission_interface/SimpleTransmission</type>
+    <joint name="corner_rf_wheel_rf">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_corner_rf_wheel_rf">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <link name="imu_wheel_rf_link"/>
+  <joint name="imu_wheel_rf_joint" type="fixed">
+    <parent link="corner_rf"/>
+    <child link="imu_wheel_rf_link"/>
+    <origin xyz="0 -0.1 0" rpy="-1.58 0 0"/>
+  </joint>
+  <gazebo reference="imu_wheel_rf_link">
+    <sensor type="imu" name="imu">
+      <always_on>true</always_on>
+    </sensor>
+  </gazebo>
+
+  <!-- Right Middle -->
+  <link name="wheel_rm">
+    <inertial>
+      <mass value="1.3681450052713"/>
+      <origin rpy="0  0  0" xyz="0  0  0"/>
+      <inertia ixx="0.00366761677810099" ixy="3.57127474371062E-08" ixz="1.5869179246557E-08" iyy="0.00366752202725405" iyz="2.77978556110377E-08" izz="0.00544768589231018"/>
+    </inertial>
+    <collision name="wheel_rm_collision">
+      <origin rpy="0  0  0" xyz="0.18614  0.20777 -0.0068"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/wheel_rm.STL" scale="1 1 1"/>
+      </geometry>
+    </collision>
+    <visual name="wheel_rm_visual">
+      <origin rpy="0  0  0" xyz="0.18614  0.20777 -0.0068"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/wheel_rm.dae" scale="1 1 1"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="bogie_right_wheel_rm" type="continuous">
+    <parent link="bogie_right"/>
+    <child link="wheel_rm"/>
+    <origin rpy="0  0  0" xyz="0.06634 -0.18198 -0.07859"/>
+    <axis xyz="0  0 -1"/>
+    <limit effort="1.0" lower="0.0" upper="0.0" velocity="0.0"/>
+  </joint>
+  <transmission name="tran_bogie_right_wheel_rm">
+  <type>transmission_interface/SimpleTransmission</type>
+    <joint name="bogie_right_wheel_rm">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_bogie_right_wheel_rm">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <link name="imu_wheel_rm_link"/>
+  <joint name="imu_wheel_rm_joint" type="fixed">
+    <parent link="bogie_right"/>
+    <child link="imu_wheel_rm_link"/>
+    <origin xyz="0.066 -0.182 -0.079" rpy="-1.58 0 0"/>
+  </joint>
+  <gazebo reference="imu_wheel_rm_link">
+    <sensor type="imu" name="imu">
+      <always_on>true</always_on>
+    </sensor>
+  </gazebo>
+
+  <!-- Right Back -->
+  <link name="wheel_rb">
+    <inertial>
+      <mass value="1.36814663300315"/>
+      <origin rpy="0  0  0" xyz="0  0  0"/>
+      <inertia ixx="0.00366908934944301" ixy="1.39874465141914E-07" ixz="5.11667280776428E-05" iyy="0.00366754321288305" iyz="6.06941934991221E-06" izz="0.00544619425577847"/>
+    </inertial>
+    <collision name="wheel_rb_collision">
+      <origin rpy="0  0  0" xyz="-0.12196  0.21097 -0.08269"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/wheel_rb.STL" scale="1 1 1"/>
+      </geometry>
+    </collision>
+    <visual name="wheel_rb_visual">
+      <origin rpy="0  0  0" xyz="-0.12196  0.21097 -0.08269"/>
+      <geometry>
+        <mesh filename="package://rover_description/meshes/wheel_rb.dae" scale="1 1 1"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="corner_rb_wheel_rb" type="continuous">
+    <parent link="corner_rb"/>
+    <child link="wheel_rb"/>
+    <origin rpy="0  0  0" xyz="0.0076  -0.09914 -0.01061"/>
+    <axis xyz="-0.02875  0.00342 -0.99958"/>
+    <limit effort="1.0" lower="0.0" upper="0.0" velocity="0.0"/>
+  </joint>
+  <transmission name="tran_corner_rb_wheel_rb">
+  <type>transmission_interface/SimpleTransmission</type>
+    <joint name="corner_rb_wheel_rb">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_corner_rb_wheel_rb">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <link name="imu_wheel_rb_link"/>
+  <joint name="imu_wheel_rb_joint" type="fixed">
+    <parent link="corner_rb"/>
+    <child link="imu_wheel_rb_link"/>
+    <origin xyz="0 -0.1 0" rpy="-1.58 0 0"/>
+  </joint>
+  <gazebo reference="imu_wheel_rb_link">
+    <sensor type="imu" name="imu">
+      <always_on>true</always_on>
+    </sensor>
+  </gazebo>
+
+
+  <!-- Plugins -->
+  <!-- ****** -->
+  
+  <!-- ROS control plugin -->
+  <gazebo>
+   <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+     <robotNamespace>rover_ns</robotNamespace>
+     <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+     <legacyModeNS>true</legacyModeNS>
+     <odometryTopic>odom</odometryTopic>
+     <odometryFrame>odom</odometryFrame>
+     <odometrySource>world</odometrySource>
+     <publishOdomTF>true</publishOdomTF>
+   </plugin>
+  </gazebo>
+
+  <!-- Groundtruth plugin -->
+  <gazebo>
+    <plugin name="robot_groundtruth_sim" filename="libgazebo_ros_p3d.so">
+      <alwaysOn>true</alwaysOn>
+      <updateRate>100.0</updateRate>
+      <bodyName>body</bodyName>
+      <topicName>odom</topicName>
+      <frameName>world</frameName>
+    </plugin>
+  </gazebo>
+
+
+  <gazebo>
+    <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
+      <alwaysOn>true</alwaysOn>
+      <bodyName>body</bodyName>
+      <frameName>imu_link</frameName>
+      <topicName>imu</topicName>
+      <serviceName>imu_service</serviceName>
+      <gaussianNoise>0</gaussianNoise>
+      <updateRate>30</updateRate>
+      <imu>
+        <noise>
+          <type>gaussian</type>
+          <rate>
+            <mean>0.0</mean>
+            <stddev>2e-4</stddev>
+            <bias_mean>0.0000075</bias_mean>
+            <bias_stddev>0.0000008</bias_stddev>
+          </rate>
+          <accel>
+            <mean>0.0</mean>
+            <stddev>1.7e-2</stddev>
+            <bias_mean>0.1</bias_mean>
+            <bias_stddev>0.001</bias_stddev>
+          </accel>
+        </noise>
+      </imu>
+    </plugin>
+  </gazebo>
+
+  <gazebo>
+    <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
+      <alwaysOn>true</alwaysOn>
+      <bodyName>corner_lb</bodyName>
+      <frameName>imu_wheel_lb_link</frameName>
+      <topicName>imu/wheel_lb</topicName>
+      <serviceName>imu_service</serviceName>
+      <gaussianNoise>0</gaussianNoise>
+      <updateRate>30</updateRate>
+      <imu>
+        <noise>
+          <type>gaussian</type>
+          <rate>
+            <mean>0.0</mean>
+            <stddev>2e-4</stddev>
+            <bias_mean>0.0000075</bias_mean>
+            <bias_stddev>0.0000008</bias_stddev>
+          </rate>
+          <accel>
+            <mean>0.0</mean>
+            <stddev>1.7e-2</stddev>
+            <bias_mean>0.1</bias_mean>
+            <bias_stddev>0.001</bias_stddev>
+          </accel>
+        </noise>
+      </imu>
+    </plugin>
+  </gazebo>
+
+  <gazebo>
+    <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
+      <alwaysOn>true</alwaysOn>
+      <bodyName>corner_rb</bodyName>
+      <frameName>imu_wheel_rb_link</frameName>
+      <topicName>imu/wheel_rb</topicName>
+      <serviceName>imu_service</serviceName>
+      <gaussianNoise>0</gaussianNoise>
+      <updateRate>30</updateRate>
+      <imu>
+        <noise>
+          <type>gaussian</type>
+          <rate>
+            <mean>0.0</mean>
+            <stddev>2e-4</stddev>
+            <bias_mean>0.0000075</bias_mean>
+            <bias_stddev>0.0000008</bias_stddev>
+          </rate>
+          <accel>
+            <mean>0.0</mean>
+            <stddev>1.7e-2</stddev>
+            <bias_mean>0.1</bias_mean>
+            <bias_stddev>0.001</bias_stddev>
+          </accel>
+        </noise>
+      </imu>
+    </plugin>
+  </gazebo>
+
+  <gazebo>
+    <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
+      <alwaysOn>true</alwaysOn>
+      <bodyName>corner_lf</bodyName>
+      <frameName>imu_wheel_lf_link</frameName>
+      <topicName>imu/wheel_lf</topicName>
+      <serviceName>imu_service</serviceName>
+      <gaussianNoise>0</gaussianNoise>
+      <updateRate>30</updateRate>
+      <imu>
+        <noise>
+          <type>gaussian</type>
+          <rate>
+            <mean>0.0</mean>
+            <stddev>2e-4</stddev>
+            <bias_mean>0.0000075</bias_mean>
+            <bias_stddev>0.0000008</bias_stddev>
+          </rate>
+          <accel>
+            <mean>0.0</mean>
+            <stddev>1.7e-2</stddev>
+            <bias_mean>0.1</bias_mean>
+            <bias_stddev>0.001</bias_stddev>
+          </accel>
+        </noise>
+      </imu>
+    </plugin>
+  </gazebo>
+
+  <gazebo>
+    <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
+      <alwaysOn>true</alwaysOn>
+      <bodyName>corner_rf</bodyName>
+      <frameName>imu_wheel_rf_link</frameName>
+      <topicName>imu/wheel_rf</topicName>
+      <serviceName>imu_service</serviceName>
+      <gaussianNoise>0</gaussianNoise>
+      <updateRate>30</updateRate>
+      <imu>
+        <noise>
+          <type>gaussian</type>
+          <rate>
+            <mean>0.0</mean>
+            <stddev>2e-4</stddev>
+            <bias_mean>0.0000075</bias_mean>
+            <bias_stddev>0.0000008</bias_stddev>
+          </rate>
+          <accel>
+            <mean>0.0</mean>
+            <stddev>1.7e-2</stddev>
+            <bias_mean>0.1</bias_mean>
+            <bias_stddev>0.001</bias_stddev>
+          </accel>
+        </noise>
+      </imu>
+    </plugin>
+  </gazebo>
+
+  <gazebo>
+    <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
+      <alwaysOn>true</alwaysOn>
+      <bodyName>bogie_left</bodyName>
+      <frameName>imu_wheel_lm_link</frameName>
+      <topicName>imu/wheel_lm</topicName>
+      <serviceName>imu_service</serviceName>
+      <gaussianNoise>0</gaussianNoise>
+      <updateRate>30</updateRate>
+      <imu>
+        <noise>
+          <type>gaussian</type>
+          <rate>
+            <mean>0.0</mean>
+            <stddev>2e-4</stddev>
+            <bias_mean>0.0000075</bias_mean>
+            <bias_stddev>0.0000008</bias_stddev>
+          </rate>
+          <accel>
+            <mean>0.0</mean>
+            <stddev>1.7e-2</stddev>
+            <bias_mean>0.1</bias_mean>
+            <bias_stddev>0.001</bias_stddev>
+          </accel>
+        </noise>
+      </imu>
+    </plugin>
+  </gazebo>
+
+  <gazebo>
+    <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
+      <alwaysOn>true</alwaysOn>
+      <bodyName>bogie_right</bodyName>
+      <frameName>imu_wheel_rm_link</frameName>
+      <topicName>imu/wheel_rm</topicName>
+      <serviceName>imu_service</serviceName>
+      <gaussianNoise>0</gaussianNoise>
+      <updateRate>30</updateRate>
+      <imu>
+        <noise>
+          <type>gaussian</type>
+          <rate>
+            <mean>0.0</mean>
+            <stddev>2e-4</stddev>
+            <bias_mean>0.0000075</bias_mean>
+            <bias_stddev>0.0000008</bias_stddev>
+          </rate>
+          <accel>
+            <mean>0.0</mean>
+            <stddev>1.7e-2</stddev>
+            <bias_mean>0.1</bias_mean>
+            <bias_stddev>0.001</bias_stddev>
+          </accel>
+        </noise>
+      </imu>
+    </plugin>
+  </gazebo>
+
+  
+</robot>

@@ -1,0 +1,159 @@
+#!/usr/bin/env python
+"""
+ Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ software and associated documentation files (the "Software"), to deal in the Software
+ without restriction, including without limitation the rights to use, copy, modify,
+ merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ permit persons to whom the Software is furnished to do so.
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+"""
+
+import time
+import math
+import rospy
+from std_msgs.msg import Float64
+from geometry_msgs.msg import Twist
+
+class OSRMotionControl:
+	""" This class provides motion control and initializes the various motor controllers for the open source rover"""
+	
+	def __init__(self):
+		rospy.loginfo("Motion control started...")
+		
+		self.robot_width = 45
+		self.robot_length = 76
+		self.max_turn_angle_in_radians = 0.78
+		self.speed_scale_factor = 5
+		self.constant_turn_angle_in_radians = 0.4
+		
+		self.controller_ns = "rover_ns"
+		self.controller_command = "command"
+
+		self.publishers = {
+			"body_rocker_left_controller": None,
+		    "body_rocker_right_controller": None,
+		    "corner_lf_wheel_lf_controller": None,
+	        "bogie_left_wheel_lm_controller": None,
+	        "corner_lb_wheel_lb_controller": None,
+	        "corner_rb_wheel_rb_controller": None,
+	        "bogie_right_wheel_rm_controller": None,
+	        "corner_rf_wheel_rf_controller": None,
+	        "rocker_left_bogie_left_controller": None,
+	        "rocker_right_bogie_right_controller": None,
+	        "bogie_left_corner_lf_controller": None,
+	        "rocker_left_corner_lb_controller": None,
+	        "rocker_right_corner_rb_controller": None,
+	        "bogie_right_corner_rf_controller": None,
+	        "joint_state_controller": None
+		}
+		
+		self.load_controllers()
+		self.start()
+		self.cmd_vel_msg = Twist()
+		
+		rospy.loginfo("Subscribing to command velocity (cmd_vel)...")
+		rospy.Subscriber("/cmd_vel", Twist, self.cmd_vel_callback)
+	
+	def cmd_vel_callback(self, msg):
+		self.cmd_vel_msg = msg
+	
+	# TODO: Add in checks to ensure controllers are loaded.
+	def load_controllers(self):
+		""" Initializes the controllers.  """
+		rospy.loginfo("Loading controllers...")
+		for controller in self.publishers:
+			rospy.loginfo("Loading controller "+str(controller))
+			topic = "/"+self.controller_ns+"/"+controller+"/"+self.controller_command
+			self.publishers[controller] = rospy.Publisher(topic, Float64, queue_size=10)
+			
+	# Max value: 100, Min value: -100
+	def send_motor_command(self, data):
+		""" Send motor commands to each wheel motor controller."""
+		#rospy.loginfo(data)
+		self.publishers['corner_rf_wheel_rf_controller'].publish( data[0] )
+		self.publishers['bogie_right_wheel_rm_controller'].publish( data[1] )
+		self.publishers['corner_rb_wheel_rb_controller'].publish( data[2] )
+		self.publishers['corner_lf_wheel_lf_controller'].publish( data[3] )
+		self.publishers['bogie_left_wheel_lm_controller'].publish( data[4] )
+		self.publishers['corner_lb_wheel_lb_controller'].publish( data[5] )
+	
+	# Max rotation is 45 degrees.
+	def send_steering_command(self, data):
+		""" Send steering commands to the bogie and rocker. """
+		#rospy.loginfo(data)
+		self.publishers['bogie_right_corner_rf_controller'].publish( data[0] )
+		self.publishers['rocker_right_corner_rb_controller'].publish( data[1] )
+		self.publishers['bogie_left_corner_lf_controller'].publish( data[2] )
+		self.publishers['rocker_left_corner_lb_controller'].publish( data[3] )
+	
+	# TODO: Implement backwards motion.
+	def set_speed(self, speed):
+		""" Set the current speed of the wheels. Max speed is 100, only go forwards. """
+		
+		# At this time, the robot only moves forward.
+		if speed >= 0:
+			self.send_motor_command([speed*-1, speed*-1, speed*-1, speed, speed, speed])
+		
+	# TODO: Implement granular turing motions. Right now it is set to a constant.
+	def set_turning_angle(self, angular_velocity):
+		turn_angle_radians = 0.0
+		if (angular_velocity<0):
+			turn_angle_radians = self.constant_turn_angle_in_radians*-1
+		elif (angular_velocity>0):
+			turn_angle_radians = self.constant_turn_angle_in_radians
+		
+		self.send_steering_command([turn_angle_radians*-1, 
+			turn_angle_radians, 
+			turn_angle_radians*-1, 
+			turn_angle_radians])
+			
+	def start(self):
+		""" Starting state of the robot. """
+		self.set_turning_angle(0.0)
+		self.set_speed(0.0)
+	
+	def move_with_cmd_vel(self):
+		self.set_turning_angle(self.cmd_vel_msg.angular.z)
+		self.set_speed(self.cmd_vel_msg.linear.x * self.speed_scale_factor)
+
+if __name__ == "__main__":
+	rospy.init_node("motion")
+	rospy.loginfo("Starting the motion node...")
+	osr_motion = OSRMotionControl()
+	rate = rospy.Rate(10.0)
+	rospy.loginfo("Listening...")
+	while not rospy.is_shutdown():
+		osr_motion.move_with_cmd_vel()
+		rate.sleep()
+	
+
+'''
+# --------- Topic list ----------
+# Body rocker joints
+/rover_ns/body_rocker_left_controller/command
+/rover_ns/body_rocker_right_controller/command
+
+# Rocker bogie joints
+/rover_ns/rocker_left_bogie_left_controller/command
+/rover_ns/rocker_right_bogie_right_controller/command
+
+# Corner joints
+/rover_ns/bogie_left_corner_lf_controller/command
+/rover_ns/rocker_left_corner_lb_controller/command
+/rover_ns/rocker_right_corner_rb_controller/command
+/rover_ns/bogie_right_corner_rf_controller/command
+
+# Wheels
+/rover_ns/corner_lf_wheel_lf_controller/command
+/rover_ns/bogie_left_wheel_lm_controller/command
+/rover_ns/corner_lb_wheel_lb_controller/command
+/rover_ns/corner_rb_wheel_rb_controller/command
+/rover_ns/bogie_right_wheel_rm_controller/command
+/rover_ns/corner_rf_wheel_rf_controller/command
+'''
