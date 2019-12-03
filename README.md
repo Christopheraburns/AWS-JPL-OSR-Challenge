@@ -10,22 +10,22 @@
 <p>The main sections of this document are:</p>
 
 
-1. [What is the challenge?](<a href="#whatis"></a>)
+1. [What is the challenge?](#whatis)
 
-2. [What are the rules to the challenge](<a href="#whataretherules"></a>)
+2. [What are the rules to the challenge](#whataretherules)
 
-3. [Getting Started](<a href="#gettingstarted"></a>)
+3. [Getting Started](#gettingstarted)
 
-3. [Asset manifest and descriptions](<a href="assetmanifest"></a>)
+3. [Asset manifest and descriptions](#assetmanifest)
 
-4. [Help and support](<a href="help"></a>)
+4. [Help and support](#help)
 
 
-##<a name="#whatis"> What is the Challenge?<a/>
+## <a name="whatis"> What is the Challenge?<a/>
 
 <p> “AWS - JPL Open-Source Rover Challenge” to be held online starting on Monday, December 2, 2019 and ending on Friday, February 21, 2020 and is sponsored by Amazon Web Services, Inc. (“The Sponsor” or “AWS”) and is held in collaboration with JPL and AngelHack LLC (“Administrator”).</p>
 
-##<a name="#whataretherules"> What are the rules?</a>
+## <a name="whataretherules"> What are the rules?</a>
 <p> Simply put - you must train an RL agent to successfully navigate the Rover to the checkpoint on Mars.</p>
 
 <p> the below images shows the NASA-JPL Open Source Rover (on the left) and your digital version of the Rover (on the right)</p>
@@ -40,7 +40,7 @@
     + Subtract the distance travelled to reach the checkpoint (in meters)
     + Subtract the average linear acceleration in m/s^2 of the Rover
 
-##<a name="#gettingstarted">Getting Started</a>
+## <a name="gettingstarted">Getting Started</a>
 <p> While familiarity with RoS and Gazebo are not required for this challenge, you will be required to submit your entry in the form of
 an AWS Robomaker simulation job.  This repo can be cloned directly into a (Cloud9) Robomaker development environment. It will not do a very good job training, 
 however as the reward_function (more on that below) is empty.
@@ -54,7 +54,7 @@ ships with this repo.  It is a very basic world with monolith-type structures th
 to edit his world to learn more about how the Rover manuevers.  Submissions to the challenge must be done via an unedited Rover and an 
 unedited Martian world.</p>
 
-##<a name="#assetmanifest">Asset manifest and descriptions</a>
+## <a name="assetmanifest">Asset manifest and descriptions</a>
 
 Project Structure:
 	There are three primary components of the solution:
@@ -113,7 +113,7 @@ If you believe they are warranted, you are free to add additional global variabl
    if they are episodic values (values that should be reset after each episode) you will need to reset those values within the 
    reward_function method once you have determined the episode should end.
 
-##<a name="#help">Help and Support</a>
+## <a name="help">Help and Support</a>
 
 slack channel:
 
