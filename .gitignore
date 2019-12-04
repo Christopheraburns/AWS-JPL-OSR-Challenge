@@ -2,7 +2,6 @@
 .c9/
 
 # Robomaker build artifacts and log directories
-
 simulation_ws/build/
 simulation_ws/bundle/
 simulation_ws/install/
