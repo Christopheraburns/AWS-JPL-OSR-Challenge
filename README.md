@@ -27,14 +27,27 @@
 ending on Friday, February 21, 2020.  Sponsored by Amazon Web Services, Inc. (“The Sponsor” or “AWS”) and is held in collaboration with JPL and AngelHack LLC (“Administrator”).</p>
 
 ## <a name="whataretherules"> What are the rules?</a>
-<p> Simply put - you must train an RL agent to successfully navigate the Rover to the checkpoint on Mars.</p>
+<p> Simply put - you must train an RL agent to successfully navigate the Rover to a predetermined checkpoint on Mars.</p>
 
-<p> The below images shows the NASA-JPL Open Source Rover (on the left) and your digital version of the Rover (on the right)</p>
+<p> The below images show the NASA-JPL Open Source Rover (on the left) and your digital version of the Rover on the right</p>
+
+<p> We have simplified the action space to three discrete options:</p>
+        
+        Turn left
+        Turn right
+        Stay Straight
+
+<p> We have set the Rover to use a constant, even linear acceleration, in other words, you cannot make the Rover go faster or slower at this time.
+    Wall Time is not a factor in the scoring mechanism.
+</p>
+
+<p> The RL-agent leverages rl_coach to manage the training process.  This repo ships with a Clipped PPO algorithm but you are free to use a different algorithm</p>
+        
 
 ![osr](images/sidebyside.png)
 
 
-<p> To win the challenge, your RL agent must navigate the Rover to the checkpoint and have the HIGHEST SCORE</p>
+<p> To win the challenge, your RL-agent must navigate the Rover to the checkpoint and have the HIGHEST SCORE</p>
 <p> There is currently a single [simulated] Martian environment that all participants will use.  </p>
 
 ![birdseye](images/start_destination.jpg)
@@ -54,23 +67,23 @@ ending on Friday, February 21, 2020.  Sponsored by Amazon Web Services, Inc. (�
         Reaches the destination without experiencing unnecessary acceleration that could represent wheel hop or drops
     
 ## <a name="gettingstarted">Getting Started</a>
-<p> While familiarity with RoS and Gazebo are not required for this challenge, they can be useful to understand how your RlAgent is controlling the Rover.
+<p> While familiarity with RoS and Gazebo are not required for this challenge, they can be useful to understand how your RL-agent is controlling the Rover.
 You will be required to submit your entry in the form of an AWS Robomaker simulation job.  This repo can be cloned directly into a (Cloud9) Robomaker development environment. 
 It will not do a very good job training, however as the reward_function (more on that below) is empty.</p>
 
-<p>All of the Martian world environment variables and Rover Sensor data are captured for you and are then 
-made available via global Python variables.  You must populate the method known as the "reward_function()".  
+<p>All of the Martian world environment variables and Rover sensor data are captured for you and are then 
+made available via global python variables.  You must populate the method known as the "reward_function()".  
 The challenge ships with examples of how to populate the reward function (found in the Training Grounds Gym environment). 
 However, no level of accuracy or performance is guaranteed as the code is meant to give you a learning aid, not the solution.</p>
 
 <p> If you wish to learn more about how the Rover interacts with it's environment, you can look at the "Training Grounds" world that also
 ships with this repo.  It is a very basic world with monolith type structures that the Rover must learn to navigate around.  You are free
-to edit this world, however you wish to learn more about how the Rover manuevers. </p>
+to edit this world as you wish to learn more about how the Rover manuevers. </p>
 
-<b>DO NOT EDIT THE ROVER DESCRIPTION</b> The Rover description that ships with this repo is the "gold standard" description and it will be
+<b>DO NOT EDIT THE ROVER DESCRIPTION (src/rover)</b> The Rover description that ships with this repo is the "gold standard" description and it will be
 the Rover used to score your entries to the competition. 
 
-<b>DO NOT EDIT THE MARTIAN WORLD</b> The Martian world that ships with this repo is the "gold standard" and it is the same one that will be
+<b>DO NOT EDIT THE MARTIAN WORLD (src/mars)</b> The Martian world that ships with this repo is the "gold standard" and it is the same one that will be
 used to score your entry
 
 ## <a name="assetmanifest">Asset manifest and descriptions</a>
@@ -79,11 +92,10 @@ Project Structure:
 	There are three primary components of the solution:
 	![header image](images/3components.jpg)
 	    
-	    + A RoS package describing the Open Source Rover - this package is NOT editable
-	    + A RoS/Gazebo package that describes and runs the simulated world
-	    + A Python3 module that contains a custom OpenAI Gym environment as well as wrapper code to initiate an rl_coach training session.  
+	    + src/rover/    A RoS package describing the Open Source Rover - this package is NOT editable
+	    + src/mars/     A RoS/Gazebo package that describes and runs the simulated world
+	    + src/rl-agent/ A Python3 module that contains a custom OpenAI Gym environment as well as wrapper code to initiate an rl_coach training session.  
 	    within this module is a dedicated function 
-	
 	
     These three components work together to allow the Rover to navigate the Martian surface and send observation <-> reward tuples
 	back to the RL-agent which then uses a TensorFlow algorithm to learn how to optimize actions.
@@ -123,7 +135,8 @@ new episode.  Do not remove any of these variables.
 
 <b>steps (integer)</b>
 
-    The number of [time] steps associated with the current episode.  This is an observation-action-reward process, not distance traveled
+    The number of [time] steps associated with the current episode.  
+    This is an observation-action-reward process, not distance traveled
 
 <b>current_distance_to_checkpoint (float)</b>
 
@@ -131,7 +144,8 @@ new episode.  Do not remove any of these variables.
 	
 <b>closer_to_checkpoint (bool)</b>	
 
-    A boolean value to tell you if the Rover's last step took it closer (True) or further (False) from the Checkpoint
+    A boolean value to tell you if the Rover's last step took it closer (True) 
+    or further (False) from the Checkpoint
 	
 <b>distance_travelled (float)</b>
  
@@ -139,7 +153,8 @@ new episode.  Do not remove any of these variables.
 	
 <b>collision_threshold (float)</b> 
     
-    The Rover is quipped with a LIDAR and will detect the distance of the closest object 45 degrees to the right or left, within 4.5 meters
+    The Rover is quipped with a LIDAR and will detect the distance of the closest 
+    object 45 degrees to the right or left, within 4.5 meters
 	
 <b>last_collision_threshold (float)</b>
 
@@ -155,13 +170,15 @@ new episode.  Do not remove any of these variables.
 	
 <b>reward_in_episode (integer)</b>
 
-    The cumulative reward for the current episode. As the participant determines the reward signal this number should not be compared to any other
-    participants episodic reward
+    The cumulative reward for the current episode. As the participant determines 
+    the reward signal this number should not be compared to any other participants 
+    episodic reward
 	
 <b>power_supply_range (integer)</b>
 
-    This is the range of the Rover in a given episode.  It decrements by time steps, NOT distance traveled 
-    in order to prevent the Rover from getting stuck or if it flips due to fall/collision and cannot respond to commands
+    This is the range of the Rover in a given episode.  It decrements by time steps, 
+    NOT distance traveled in order to prevent the Rover from getting stuck or 
+    if it flips due to fall/collision and cannot respond to commands
 	
 
 If you believe they are warranted, you are free to add additional global variables in the environment.  <b>However</b>, keep in mind
