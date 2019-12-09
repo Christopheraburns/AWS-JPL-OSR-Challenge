@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+	<arg name="paused" default="true"/>
+	<arg name="use_sim_time" default="true"/>
+	<arg name="gui" default="true"/>
+	<arg name="headless" default="false"/>
+	<arg name="debug" default="false"/>
+	<arg name="x" default="0" />
+    <arg name="y" default="0" />
+    <arg name="z" default="-0.033356" />
+    <arg name="roll" default=".031965"/>
+    <arg name="pitch" default=".091685"/>
+    <arg name="yaw" default=".003569" />
+	<arg name="model" default="$(find rover_description)/urdf/rover_description.urdf"/>
+	<arg name="world" default="$(find rover_description)/world/groundplane.world"/>
+	<param name="robot_description" textfile="$(find rover_description)/urdf/rover_description.urdf" />
+
+
+
+	<include file="$(find gazebo_ros)/launch/empty_world.launch">
+		<arg name="world_name" value="$(arg world)"/>
+		<arg name="debug" value="$(arg debug)" />
+		<arg name="gui" value="$(arg gui)" />
+		<arg name="paused" value="$(arg paused)"/>
+		<arg name="use_sim_time" value="$(arg use_sim_time)"/>
+		<arg name="headless" value="$(arg headless)"/>
+    </include>
+
+
+	<!--
+		push robot_description to factory and spawn robot in gazebo
+	-->
+   <node name="urdf_spawner"
+		 pkg="gazebo_ros"
+		 type="spawn_model"
+		 respawn="false"
+		 output="screen"
+    	 args="-urdf -x $(arg x) -y $(arg y) -z $(arg z) -R $(arg roll) -P $(arg pitch) -Y $(arg yaw) -model rover -param robot_description"/>
+
+	<node name="message_to_tf" pkg="message_to_tf" type="message_to_tf" args="odom" respawn="true" />
+
+
+    <!-- Load joint controller configurations from YAML file to parameter server -->
+    <rosparam file="$(find rover_description)/config/rover_control.yaml" command="load"/>
+
+    <!-- load the controllers -->
+    <node name="controller_spawner" ns="rover_ns" pkg="controller_manager" type="spawner" respawn="false" output="screen"  args="body_rocker_left_controller
+        body_rocker_right_controller
+        corner_lf_wheel_lf_controller
+        bogie_left_wheel_lm_controller
+        corner_lb_wheel_lb_controller
+        corner_rb_wheel_rb_controller
+        bogie_right_wheel_rm_controller
+        corner_rf_wheel_rf_controller
+        rocker_left_bogie_left_controller
+        rocker_right_bogie_right_controller
+        bogie_left_corner_lf_controller
+        rocker_left_corner_lb_controller
+        rocker_right_corner_rb_controller
+        bogie_right_corner_rf_controller
+        joint_state_controller"/>
+
+
+    <remap from="joint_states" to="rover_ns/joint_states" />
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen"></node>
+    <node name="motion" pkg="rover_description" type="motion" respawn="true" output="screen"></node>
+
+</launch>
