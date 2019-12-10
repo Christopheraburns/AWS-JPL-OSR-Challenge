@@ -37,7 +37,7 @@
           "s3Bucket": "burnsca-training",
           "launchConfig": {
             "packageName": "training_grounds",
-            "launchFile": "training_env.launch",
+            "launchFile": "training_env_only.launch",
             "environmentVariables": {
               "MARKOV_PRESET_FILE": "training_grounds.py",
               "ROS_AWS_REGION": "us-east-1",
@@ -131,7 +131,7 @@
           "s3Bucket": "burnsca-training",
           "launchConfig": {
             "packageName": "training_grounds",
-            "launchFile": "training.launch",
+            "launchFile": "training_full_sim.launch",
             "environmentVariables": {
               "MARKOV_PRESET_FILE": "training_grounds.py",
               "MODEL_S3_BUCKET": "burnsca-training",
