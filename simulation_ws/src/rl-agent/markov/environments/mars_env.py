@@ -321,7 +321,7 @@ class MarsEnv(gym.Env):
         the number of steps
 
         Positive reward:
-            (range)/(Total steps) + (distance from origin)/(distance from destination to origin)
+            (steps remaining)/(Total steps) + (distance from origin)/(distance from destination to origin)
             With the above calculation, the multiplier begins at 1
             Increases as we approach destination using less steps
             Decreases the more steps we use to get to destination
@@ -330,8 +330,23 @@ class MarsEnv(gym.Env):
             Similar to the positive reward this value starts at 1,
             Increases as we take more steps but not getting closer to destination
             Decreases with less steps taken while approaching destination
+            The negative multiplier should never go below 0.4
         :return: positive and negative reward multiplier as a tuple
         """
+        total_steps = MAX_STEPS
+        steps_remaining = self.power_supply_range
+        steps_taken = total_steps - steps_remaining
+
+        total_distance = INITIAL_DISTANCE_TO_CHECKPOINT
+        distance_to_checkpoint = self.current_distance_to_checkpoint
+        distance_from_origin = total_distance - distance_to_checkpoint
+
+        # Positive reward multiplier
+        positive_reward_multiplier = (steps_remaining/total_steps) + (distance_from_origin/total_distance)
+        negative_reward_multiplier = (steps_taken/total_steps) + (distance_to_checkpoint/total_distance)
+        if negative_reward_multiplier < 0.4:
+            negative_reward_multiplier = 0.4
+        return positive_reward_multiplier, negative_reward_multiplier
 
 
     def get_position_on_lidar(self):
