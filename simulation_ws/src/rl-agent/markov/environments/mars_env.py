@@ -315,6 +315,45 @@ class MarsEnv(gym.Env):
         self.last_position_y = self.y
 
 
+    def get_reward_multiplier(self):
+        """
+        Calculates how much to multiply positive and negative rewards with based on distance to destination and
+        the number of steps
+
+        Positive reward:
+            (range)/(Total steps) + (distance from origin)/(distance from destination to origin)
+            With the above calculation, the multiplier begins at 1
+            Increases as we approach destination using less steps
+            Decreases the more steps we use to get to destination
+        Negative reward:
+            (steps taken)/(total steps) + (distance to destination)/(distance from destination to origin)
+            Similar to the positive reward this value starts at 1,
+            Increases as we take more steps but not getting closer to destination
+            Decreases with less steps taken while approaching destination
+        :return: positive and negative reward multiplier as a tuple
+        """
+
+
+    def get_position_on_lidar(self):
+        """
+        Calculates position on the lidar vision given current and previous collision threshold
+        and distance covered between the two thresholds
+
+        Reference image: https://photos.app.goo.gl/ruGPgBEovdmUUNv48
+        Horizontal Lanes:
+        1 : 2.5 < lane <= 3.5  (Line A1B1)
+        2 : 1.5 < lane <= 2.5  (Line WZ)
+        3 : 1.0 < lane <= 1.5  (Line UV)
+        4 : 0.5 < lane <= 1.0  (Line ST)
+
+        Vertical lanes:
+        1 : 1.0 < lane <= 1.5  (Line h or i)
+        2 : 0.5 < lane <= 1.0  (Line f or g)
+        3 : 0.0 < lane <= 0.5  (Line k or j)
+        :return: horizontal and vertical lane as a tuple
+        """
+        pass
+
 
     '''
     EDIT - but do not change the function signature. 
