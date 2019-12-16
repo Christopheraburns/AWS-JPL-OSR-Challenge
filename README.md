@@ -6,6 +6,13 @@
 
 <p>Here you will find everything you need to begin the challenge.</p>
 
+We have also begun to create several videos to help you get started.  
+
+Overview Video:
+
+[![overview_video](https://img.youtube.com/vi/fK6Qsc01YHA/0.jpg)](https://www.youtube.com/watch?v=fK6Qsc01YHA)
+
+
 
 <p>The main sections of this document are:</p>
 
@@ -121,6 +128,7 @@ Recommended Episode ending scenarios:
     There are several scenarios that should automatically end an episode. To end an episode simple set the "done" variable in the reward_function method to True.
     
 1. If the Rover collides with an object
+
 ![collision](images/collision.jpg)
     
     NOTE: If any part of the Rover other than the BOTTOM of the wheels comes into contact with a foreign object, it is considered a Collision. If an object comes into
@@ -128,6 +136,25 @@ Recommended Episode ending scenarios:
 
 2. If the Rover's Power supply is drained
     This limit is currently set to 2,000 steps per episode
+
+
+Creating your Robomaker Development Environment
+    This GitHub repo should cloned to the root of your RoboMaker (Cloud9) development environment.
+
+a.) Start by going to the Robomaker console and creating a new development environment.
+    
+![robomaker](images/create_env.jpg)
+    
+b.) Once your Cloud9 dev environment is launched, drop into a terminal window and delete everything in the root of the environment. (even the .c9 directory)
+
+![deletethis](images/clear_environment.jpg)
+
+
+C.) Clone this repo to the root of your Cloud9 dev environment by using the . (DOT) notation:
+    git clone https://github.com/christopheraburns/AWS-JPL-OSR-Challenge .
+    (note the . at the end of the git command - this prevents git from creating a local project directory)
+    
+    
 
 
 There are several global constants and class scoped variables in the mars_env.py to help you build your Reward Function. These are known as "Episodic values" and will reset with each

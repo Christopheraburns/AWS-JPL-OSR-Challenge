@@ -26,7 +26,7 @@
         "simulation": {
           "maxJobDurationInSeconds": 300,
           "failureBehavior": "Continue",
-          "iamRole": "[YOUR IAM ROLE]"
+          "iamRole": "arn:aws:iam::661453023571:role/burnsca-robomaker-training-role",
           "outputLocation": "burnsca-training",
           "tags": {}
         },
@@ -34,15 +34,15 @@
           "name": "training-grounds-no-rl",
           "sourceBundleFile": "/simulation_ws/bundle/output.tar",
           "architecture": "X86_64",
-          "s3Bucket": "[YOUR_S3_BUCKET",
+          "s3Bucket": "burnsca-training",
           "launchConfig": {
             "packageName": "training_grounds",
             "launchFile": "training_env_only.launch",
             "environmentVariables": {
               "MARKOV_PRESET_FILE": "training_grounds.py",
-              "ROS_AWS_REGION": "[YOUR_AWS_REGION]",
-              "MODEL_S3_BUCKET": "[YOUR_S3_BUCKET]",
-              "MODEL_S3_PREFIX": "[YOUR_S3_BUCKET_SUBDIR]"
+              "ROS_AWS_REGION": "us-east-1",
+              "MODEL_S3_BUCKET": "burnsca-training",
+              "MODEL_S3_PREFIX": "training-grounds-001"
             }
           },
           "simulationSoftwareSuite": {
@@ -68,8 +68,8 @@
         "simulation": {
           "maxJobDurationInSeconds": 86400,
           "failureBehavior": "Continue",
-          "iamRole": "[YOUR_IAM_ROLE]",
-          "outputLocation": "[YOUR_OUTPUT_S3_BUCKET]",
+          "iamRole": "arn:aws:iam::661453023571:role/burnsca-robomaker-training-role",
+          "outputLocation": "burnsca-mars",
           "tags": {}
         },
         "simulationApp": {
@@ -82,9 +82,9 @@
             "launchFile": "mars_env_only.launch",
             "environmentVariables": {
               "MARKOV_PRESET_FILE": "mars_presets.py",
-              "ROS_AWS_REGION": "[YOUR_AWS_REGION]",
-              "MODEL_S3_BUCKET": "[YOUR_S3_BUCKET]",
-              "MODEL_S3_PREFIX": "[YOUR_S3_BUCKET_SUBDIR]"
+              "ROS_AWS_REGION": "us-east-1",
+              "MODEL_S3_BUCKET": "burnsca-mars",
+              "MODEL_S3_PREFIX": "mars-env-test-001"
             }
           },
           "simulationSoftwareSuite": {
@@ -110,15 +110,15 @@
         "simulation": {
           "maxJobDurationInSeconds": 86400,
           "failureBehavior": "Continue",
-          "iamRole": "[YOUR_IAM_ROLE]",
-          "outputLocation": "[YOUR_S3_BUCKET]",
+          "iamRole": "arn:aws:iam::661453023571:role/burnsca-robomaker-training-role",
+          "outputLocation": "burnsca-training-output",
           "vpcConfig": {
             "subnets": [
-              "[YOUR_SUBNET_A]",
-              "[YOUR_SUBNET_B]"
+              "subnet-48c9f366",
+              "subnet-93e4dccf"
             ],
             "securityGroups": [
-              "[YOUR_SECURITY_GROUP]"
+              "sg-030d59568d7d76eab"
             ],
             "assignPublicIp": true
           },
@@ -134,9 +134,9 @@
             "launchFile": "training_full_sim.launch",
             "environmentVariables": {
               "MARKOV_PRESET_FILE": "training_grounds.py",
-              "MODEL_S3_BUCKET": "[YOUR_S3_BUCKET]",
-              "MODEL_S3_PREFIX": "[YOUR_S3_BUCKET_SUBDIR]",
-              "ROS_AWS_REGION": "[YOUR_AWS_REGION]"
+              "MODEL_S3_BUCKET": "burnsca-training",
+              "MODEL_S3_PREFIX": "001-training-grounds-with-rl",
+              "ROS_AWS_REGION": "us-east-1"
             }
           },
           "simulationSoftwareSuite": {
@@ -162,15 +162,15 @@
         "simulation": {
           "maxJobDurationInSeconds": 86400,
           "failureBehavior": "Continue",
-          "iamRole": "[YOUR_IAM_ROLE]",
+          "iamRole": "arn:aws:iam::661453023571:role/burnsca-robomaker-training-role",
           "outputLocation": "burnsca-mars",
           "vpcConfig": {
             "subnets": [
-              "[YOUR_SUBNET_A]",
-              "[YOUR_SUBNET_B]"
+              "subnet-48c9f366",
+              "subnet-93e4dccf"
             ],
             "securityGroups": [
-              "[YOUR_SECURITY_GROUP]"
+              "sg-030d59568d7d76eab"
             ],
             "assignPublicIp": true
           },
@@ -186,9 +186,9 @@
             "launchFile": "mars_full_sim.launch",
             "environmentVariables": {
               "MARKOV_PRESET_FILE": "mars_presets.py",
-              "MODEL_S3_BUCKET": "[YOUR_S3_BUCKET]",
-              "MODEL_S3_PREFIX": "[YOUR_S3_BUCKET_SUBDIR]",
-              "ROS_AWS_REGION": "[YOUR_AWS_REGION]"
+              "MODEL_S3_BUCKET": "burnsca-mars",
+              "MODEL_S3_PREFIX": "001-mars-with-rl",
+              "ROS_AWS_REGION": "us-east-1"
             }
           },
           "simulationSoftwareSuite": {
@@ -214,15 +214,15 @@
         "simulation": {
           "maxJobDurationInSeconds": 1800,
           "failureBehavior": "Continue",
-          "iamRole": "[YOUR_IAM_ROLE]",
+          "iamRole": "arn:aws:iam::661453023571:role/burnsca-robomaker-training-role",
           "outputLocation": "burnsca-training-output",
           "vpcConfig": {
             "subnets": [
-              "[YOUR_SUBNET_A]",
-              "[YOUR_SUBNET_B]"
+              "subnet-48c9f366",
+              "subnet-93e4dccf"
             ],
             "securityGroups": [
-              "[YOUR_SECURITY_GROUP]"
+              "sg-030d59568d7d76eab"
             ],
             "assignPublicIp": true
           },
@@ -232,15 +232,15 @@
           "name": "training-evaluation-sim",
           "sourceBundleFile": "/simulation_ws/bundle/output.tar",
           "architecture": "X86_64",
-          "s3Bucket": "[YOUR_S3_BUCKET]",
+          "s3Bucket": "burnsca-training",
           "launchConfig": {
             "packageName": "training_grounds",
             "launchFile": "eval.launch",
             "environmentVariables": {
               "MARKOV_PRESET_FILE": "rover_evaluation.py",
-              "MODEL_S3_BUCKET": "[YOUR_S3_BUCKET]",
-              "MODEL_S3_PREFIX": "[YOUR_S3_BUCKET_SUBDIR]",
-              "ROS_AWS_REGION": "[YOUR_AWS_REGION]"
+              "MODEL_S3_BUCKET": "burnsca-training",
+              "MODEL_S3_PREFIX": "001-training-grounds-eval",
+              "ROS_AWS_REGION": "us-east-1"
             }
           },
           "simulationSoftwareSuite": {

@@ -19,5 +19,5 @@
     </include>
 
 
-	<include file="$(find mars)/launch/rover.launch"/>
+	<include file="$(find mars)/launch/rover_mars.launch"/>
 </launch>

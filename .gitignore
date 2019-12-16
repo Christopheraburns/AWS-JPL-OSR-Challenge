@@ -1,5 +1,6 @@
 # Cloud9 IDE
 .c9/
+.idea/
 
 # Robomaker build artifacts and log directories
 roboMakerLogs/
@@ -7,3 +8,10 @@ simulation_ws/build/
 simulation_ws/bundle/
 simulation_ws/install/
 simulation_ws/log/
+
+# Python / Notebook Checkpoints
+__pycache__/
+.ipynb_checkpoints
+
+# MacOS
+.DS_Store
