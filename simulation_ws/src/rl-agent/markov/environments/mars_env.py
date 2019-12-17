@@ -348,6 +348,8 @@ class MarsEnv(gym.Env):
             negative_reward_multiplier = 0.4
         return positive_reward_multiplier, negative_reward_multiplier
 
+    def distance_since_last_reward(self):
+        return math.sqrt(((self.last_position_x-self.x)**2) + ((self.last_position_y - self.y)**2))
 
     def get_position_on_lidar(self):
         """
@@ -371,12 +373,24 @@ class MarsEnv(gym.Env):
         # To calculate the object lane the object must be within lidar range
         # The rover must have moved from point to point before identifying the lane
 
-        # If the last collision
+        # We're not any where near colliding and
+        # We must have both thresholds to calculate the lane
         if self.collision_threshold >= 4.5 or self.last_collision_threshold >= 4.5:
-            return None, None
+            return 0, 0
 
         # For calculations of the position reference: https://photos.app.goo.gl/54FipncQxmjT1NGV6
-
+        # let BC = a, AC = b, BA=c, theta = Angle at A
+        # theta = cosine_inverse( (b^2 + c^2 - a^2 ) / (2bc) )
+        a = self.collision_threshold
+        b = self.last_collision_threshold
+        c = self.distance_since_last_reward()
+        # This is in radians
+        theta = math.acos( (b**2 + c**2 - a**2) / (2 * b * c) )
+        # horizontal_lane = sine( theta * b)
+        # vertical_lane = square_root( b^2 - horizontal_lane ^ 2 )
+        horizontal_lane = math.sin(theta) * b
+        vertical_lane = math.sqrt(b**2 - horizontal_lane **2)
+        return horizontal_lane - vertical_lane
 
 
     '''
@@ -390,6 +404,9 @@ class MarsEnv(gym.Env):
         :return: reward as float
                  done as boolean
         '''
+        positive_multiplier, negative_multiplier = self.get_reward_multiplier()
+        horizontal_lane, vertical_lane = self.get_position_on_lidar()
+        self.last_collision_threshold = self.collision_threshold
         
         # Corner boundaries of the world (in Meters)
         STAGE_X_MIN = -44.0
