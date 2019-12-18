@@ -351,46 +351,49 @@ class MarsEnv(gym.Env):
     def distance_since_last_reward(self):
         return math.sqrt(((self.last_position_x-self.x)**2) + ((self.last_position_y - self.y)**2))
 
-    def get_position_on_lidar(self):
+    def score_based_on_collision_probability(self):
         """
         Calculates position on the lidar vision given current and previous collision threshold
         and distance covered between the two thresholds
 
         Reference image: https://photos.app.goo.gl/ruGPgBEovdmUUNv48
-        Horizontal Lanes:
-        1 : 2.5 < lane <= 3.5  (Line A1B1)
-        2 : 1.5 < lane <= 2.5  (Line WZ)
-        3 : 1.0 < lane <= 1.5  (Line UV)
-        4 : 0.5 < lane <= 1.0  (Line ST)
-
-        Vertical lanes:
-        1 : 1.0 < lane <= 1.5  (Line h or i)
-        2 : 0.5 < lane <= 1.0  (Line f or g)
-        3 : 0.0 < lane <= 0.5  (Line k or j)
-        :return: horizontal and vertical lane as a tuple
+        :return: positive or negative score as float
         """
         # Assuming the position at which lidar is sitting is (0,0) always
-        # To calculate the object lane the object must be within lidar range
+        # To calculate the position of the object. the object must be within lidar range
         # The rover must have moved from point to point before identifying the lane
 
         # We're not any where near colliding and
-        # We must have both thresholds to calculate the lane
+        # We must have both thresholds to calculate the probability change
         if self.collision_threshold >= 4.5 or self.last_collision_threshold >= 4.5:
-            return 0, 0
+            return 0
 
         # For calculations of the position reference: https://photos.app.goo.gl/54FipncQxmjT1NGV6
         # let BC = a, AC = b, BA=c, theta = Angle at A
         # theta = cosine_inverse( (b^2 + c^2 - a^2 ) / (2bc) )
         a = self.collision_threshold
         b = self.last_collision_threshold
+        multiplier = -1  # Applies if collision threshold increases, punish the rover
+        # To take note of a move away from an object, a is always the longer distance
+        if a < b:
+            a = self.last_collision_threshold
+            b = self.collision_threshold
+            multiplier = 1  # Award the rover for the good behaviour of getting away from an obstacle
         c = self.distance_since_last_reward()
         # This is in radians
         theta = math.acos( (b**2 + c**2 - a**2) / (2 * b * c) )
-        # horizontal_lane = sine( theta * b)
-        # vertical_lane = square_root( b^2 - horizontal_lane ^ 2 )
-        horizontal_lane = math.sin(theta) * b
-        vertical_lane = math.sqrt(b**2 - horizontal_lane **2)
-        return horizontal_lane - vertical_lane
+        # x = sine( theta * b)
+        # y = square_root( b^2 - x ^ 2 )
+        # If just considering positions, x and y would become the horizontal and vertical lane respectively
+        x = math.sin(theta) * b
+        y = math.sqrt(b**2 - x **2)
+        collision_probability, side_swipe_probability = 4 - y, 3 - x
+
+        if collision_probability < 0:
+            collision_probability = 0
+        if side_swipe_probability < 0:
+            side_swipe_probability = 0
+        return collision_probability * side_swipe_probability * multiplier
 
 
     '''
@@ -405,7 +408,7 @@ class MarsEnv(gym.Env):
                  done as boolean
         '''
         positive_multiplier, negative_multiplier = self.get_reward_multiplier()
-        horizontal_lane, vertical_lane = self.get_position_on_lidar()
+        collision_probability = self.score_based_on_collision_probability()
         self.last_collision_threshold = self.collision_threshold
         
         # Corner boundaries of the world (in Meters)
