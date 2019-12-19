@@ -24,25 +24,25 @@
       "type": "simulation",
       "cfg": {
         "simulation": {
-          "maxJobDurationInSeconds": 300,
+          "maxJobDurationInSeconds": 5400,
           "failureBehavior": "Continue",
-          "iamRole": "[YOUR IAM ROLE]"
-          "outputLocation": "burnsca-training",
+          "iamRole": "arn:aws:iam::978577144063:role/billcountry-training-role",
+          "outputLocation": "billcountry-training",
           "tags": {}
         },
         "simulationApp": {
           "name": "training-grounds-no-rl",
           "sourceBundleFile": "/simulation_ws/bundle/output.tar",
           "architecture": "X86_64",
-          "s3Bucket": "[YOUR_S3_BUCKET",
+          "s3Bucket": "billcountry-training",
           "launchConfig": {
             "packageName": "training_grounds",
             "launchFile": "training_env_only.launch",
             "environmentVariables": {
               "MARKOV_PRESET_FILE": "training_grounds.py",
-              "ROS_AWS_REGION": "[YOUR_AWS_REGION]",
-              "MODEL_S3_BUCKET": "[YOUR_S3_BUCKET]",
-              "MODEL_S3_PREFIX": "[YOUR_S3_BUCKET_SUBDIR]"
+              "ROS_AWS_REGION": "us-east-2",
+              "MODEL_S3_BUCKET": "billcountry-training",
+              "MODEL_S3_PREFIX": "trained-model"
             }
           },
           "simulationSoftwareSuite": {
@@ -68,23 +68,23 @@
         "simulation": {
           "maxJobDurationInSeconds": 86400,
           "failureBehavior": "Continue",
-          "iamRole": "[YOUR_IAM_ROLE]",
-          "outputLocation": "[YOUR_OUTPUT_S3_BUCKET]",
+          "iamRole": "arn:aws:iam::978577144063:role/billcountry-training-role",
+          "outputLocation": "billcountry-training",
           "tags": {}
         },
         "simulationApp": {
           "name": "mars-env-no-rl",
           "sourceBundleFile": "/simulation_ws/bundle/output.tar",
           "architecture": "X86_64",
-          "s3Bucket": "burnsca-mars",
+          "s3Bucket": "billcountry-training",
           "launchConfig": {
             "packageName": "mars",
             "launchFile": "mars_env_only.launch",
             "environmentVariables": {
               "MARKOV_PRESET_FILE": "mars_presets.py",
-              "ROS_AWS_REGION": "[YOUR_AWS_REGION]",
-              "MODEL_S3_BUCKET": "[YOUR_S3_BUCKET]",
-              "MODEL_S3_PREFIX": "[YOUR_S3_BUCKET_SUBDIR]"
+              "ROS_AWS_REGION": "us-east-2",
+              "MODEL_S3_BUCKET": "billcountry-training",
+              "MODEL_S3_PREFIX": "trained-model"
             }
           },
           "simulationSoftwareSuite": {
@@ -110,15 +110,14 @@
         "simulation": {
           "maxJobDurationInSeconds": 86400,
           "failureBehavior": "Continue",
-          "iamRole": "[YOUR_IAM_ROLE]",
-          "outputLocation": "[YOUR_S3_BUCKET]",
+          "iamRole": "arn:aws:iam::978577144063:role/billcountry-training-role",
+          "outputLocation": "billcountry-training",
           "vpcConfig": {
             "subnets": [
-              "[YOUR_SUBNET_A]",
-              "[YOUR_SUBNET_B]"
+              "subnet-fc749697"
             ],
             "securityGroups": [
-              "[YOUR_SECURITY_GROUP]"
+              "sg-0ef71d6f377c6bec2"
             ],
             "assignPublicIp": true
           },
@@ -128,15 +127,15 @@
           "name": "training-grounds-with-rl",
           "sourceBundleFile": "/simulation_ws/bundle/output.tar",
           "architecture": "X86_64",
-          "s3Bucket": "burnsca-training",
+          "s3Bucket": "billcountry-training",
           "launchConfig": {
             "packageName": "training_grounds",
             "launchFile": "training_full_sim.launch",
             "environmentVariables": {
               "MARKOV_PRESET_FILE": "training_grounds.py",
-              "MODEL_S3_BUCKET": "[YOUR_S3_BUCKET]",
-              "MODEL_S3_PREFIX": "[YOUR_S3_BUCKET_SUBDIR]",
-              "ROS_AWS_REGION": "[YOUR_AWS_REGION]"
+              "MODEL_S3_BUCKET": "billcountry-training",
+              "MODEL_S3_PREFIX": "trained-model",
+              "ROS_AWS_REGION": "us-east-2"
             }
           },
           "simulationSoftwareSuite": {
@@ -162,15 +161,14 @@
         "simulation": {
           "maxJobDurationInSeconds": 86400,
           "failureBehavior": "Continue",
-          "iamRole": "[YOUR_IAM_ROLE]",
-          "outputLocation": "burnsca-mars",
+          "iamRole": "arn:aws:iam::978577144063:role/billcountry-training-role",
+          "outputLocation": "billcountry-training",
           "vpcConfig": {
             "subnets": [
-              "[YOUR_SUBNET_A]",
-              "[YOUR_SUBNET_B]"
+              "subnet-fc749697"
             ],
             "securityGroups": [
-              "[YOUR_SECURITY_GROUP]"
+              "sg-0ef71d6f377c6bec2"
             ],
             "assignPublicIp": true
           },
@@ -180,15 +178,15 @@
           "name": "mars_env-with-rl",
           "sourceBundleFile": "/simulation_ws/bundle/output.tar",
           "architecture": "X86_64",
-          "s3Bucket": "burnsca-mars",
+          "s3Bucket": "billcountry-training",
           "launchConfig": {
             "packageName": "mars",
             "launchFile": "mars_full_sim.launch",
             "environmentVariables": {
               "MARKOV_PRESET_FILE": "mars_presets.py",
-              "MODEL_S3_BUCKET": "[YOUR_S3_BUCKET]",
-              "MODEL_S3_PREFIX": "[YOUR_S3_BUCKET_SUBDIR]",
-              "ROS_AWS_REGION": "[YOUR_AWS_REGION]"
+              "MODEL_S3_BUCKET": "billcountry-training",
+              "MODEL_S3_PREFIX": "trained-model",
+              "ROS_AWS_REGION": "us-east-2"
             }
           },
           "simulationSoftwareSuite": {
@@ -214,15 +212,14 @@
         "simulation": {
           "maxJobDurationInSeconds": 1800,
           "failureBehavior": "Continue",
-          "iamRole": "[YOUR_IAM_ROLE]",
-          "outputLocation": "burnsca-training-output",
+          "iamRole": "arn:aws:iam::978577144063:role/billcountry-training-role",
+          "outputLocation": "billcountry-training",
           "vpcConfig": {
             "subnets": [
-              "[YOUR_SUBNET_A]",
-              "[YOUR_SUBNET_B]"
+              "subnet-fc749697"
             ],
             "securityGroups": [
-              "[YOUR_SECURITY_GROUP]"
+              "sg-0ef71d6f377c6bec2"
             ],
             "assignPublicIp": true
           },
@@ -232,15 +229,15 @@
           "name": "training-evaluation-sim",
           "sourceBundleFile": "/simulation_ws/bundle/output.tar",
           "architecture": "X86_64",
-          "s3Bucket": "[YOUR_S3_BUCKET]",
+          "s3Bucket": "billcountry-training",
           "launchConfig": {
             "packageName": "training_grounds",
             "launchFile": "eval.launch",
             "environmentVariables": {
               "MARKOV_PRESET_FILE": "rover_evaluation.py",
-              "MODEL_S3_BUCKET": "[YOUR_S3_BUCKET]",
-              "MODEL_S3_PREFIX": "[YOUR_S3_BUCKET_SUBDIR]",
-              "ROS_AWS_REGION": "[YOUR_AWS_REGION]"
+              "MODEL_S3_BUCKET": "billcountry-training",
+              "MODEL_S3_PREFIX": "trained-model",
+              "ROS_AWS_REGION": "us-east-2"
             }
           },
           "simulationSoftwareSuite": {
