@@ -416,19 +416,12 @@ class MarsEnv(gym.Env):
         STAGE_Y_MIN = -25.0
         STAGE_X_MAX = 15.0
         STAGE_Y_MAX = 22.0
-        
-        
-        GUIDERAILS_X_MIN = -46
-        GUIDERAILS_X_MAX = 1
-        GUIDERAILS_Y_MIN = -6
-        GUIDERAILS_Y_MAX = 4
 
         # REWARD Multipliers
         FINISHED_REWARD = 1000
 
         reward = 0
         base_reward = 2
-        done = False
 
         if self.closer_to_checkpoint:
             reward += positive_multiplier * base_reward
@@ -448,34 +441,35 @@ class MarsEnv(gym.Env):
             # Has LIDAR registered a hit
             if self.collision_threshold <= CRASH_DISTANCE:
                 print("Rover has sustained sideswipe damage")
-                return 0, True # No reward
+                return reward, True
             
             # Have the gravity sensors registered too much G-force
             if self.collision:
                 print("Rover has collided with an object")
-                return 0, True # No reward
+                return reward, True
             
             # Has the rover reached the max steps
             if self.power_supply_range < 1:
                 print("Rover's power supply has been drained (MAX Steps reached")
-                return 0, True # No reward
+                return reward, True
             
             # Has the Rover reached the destination
             if self.last_position_x >= CHECKPOINT_X and self.last_position_y >= CHECKPOINT_Y:
                 print("Congratulations! The rover has reached the checkpoint!")
-                reward = FINISHED_REWARD * (INITIAL_DISTANCE_TO_CHECKPOINT/self.distance_travelled) # <-- incentivize to reach checkpoint in a shorter distance
+                # <-- incentivize to reach checkpoint in a shorter distance
+                reward += positive_multiplier * FINISHED_REWARD * (INITIAL_DISTANCE_TO_CHECKPOINT/self.distance_travelled)
                 return reward, True
             
             # If it has not reached the check point is it still on the map?
-            if self.x < (GUIDERAILS_X_MIN - .45) or self.x > (GUIDERAILS_X_MAX + .45):
-                print("Rover has left the mission map!")
-                return 0, True
+            if self.x < (STAGE_X_MIN - .45) or self.x > (STAGE_X_MAX + .45):
+                print("Rover has gone beyond the world!")
+                return reward, True
 
-            if self.y < (GUIDERAILS_Y_MIN - .45) or self.y > (GUIDERAILS_Y_MAX + .45):
-                print("Rover has left the mission map!")
-                return 0, True
+            if self.y < (STAGE_Y_MIN - .45) or self.y > (STAGE_Y_MAX + .45):
+                print("Rover has gone beyond the world!")
+                return reward, True
         
-        return reward, done
+        return reward, False
     
         
     '''
