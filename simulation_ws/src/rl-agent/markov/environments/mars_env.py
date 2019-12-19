@@ -429,7 +429,16 @@ class MarsEnv(gym.Env):
         reward = 0
         base_reward = 2
         done = False
-        
+
+        if self.closer_to_checkpoint:
+            reward += positive_multiplier * base_reward
+        else:
+            reward -= negative_multiplier * base_reward
+
+        if collision_probability > 0:
+            reward += positive_multiplier * collision_probability
+        else:
+            reward += negative_multiplier * collision_probability
         
         if self.steps > 0:
             
@@ -454,8 +463,7 @@ class MarsEnv(gym.Env):
             # Has the Rover reached the destination
             if self.last_position_x >= CHECKPOINT_X and self.last_position_y >= CHECKPOINT_Y:
                 print("Congratulations! The rover has reached the checkpoint!")
-                multiplier = FINISHED_REWARD
-                reward = (base_reward * multiplier) / self.steps # <-- incentivize to reach checkpoint in fewest steps
+                reward = FINISHED_REWARD * (INITIAL_DISTANCE_TO_CHECKPOINT/self.distance_travelled) # <-- incentivize to reach checkpoint in a shorter distance
                 return reward, True
             
             # If it has not reached the check point is it still on the map?
