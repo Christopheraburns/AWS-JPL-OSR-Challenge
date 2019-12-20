@@ -26,7 +26,7 @@
         "simulation": {
           "maxJobDurationInSeconds": 300,
           "failureBehavior": "Continue",
-          "iamRole": "[YOUR IAM ROLE]"
+          "iamRole": "[YOUR IAM ROLE]",
           "outputLocation": "burnsca-training",
           "tags": {}
         },
