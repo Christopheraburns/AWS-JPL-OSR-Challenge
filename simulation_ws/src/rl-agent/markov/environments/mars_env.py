@@ -374,12 +374,14 @@ class MarsEnv(gym.Env):
         a = self.collision_threshold
         b = self.last_collision_threshold
         multiplier = -1  # Applies if collision threshold increases, punish the rover
-        # To take note of a move away from an object, a is always the longer distance
-        if a < b:
+        # To take note of a move away from an object, collision threshold is greater than the last one
+        if a > b:
             a = self.last_collision_threshold
             b = self.collision_threshold
             multiplier = 1  # Award the rover for the good behaviour of getting away from an obstacle
         c = self.distance_since_last_reward()
+        if c == 0:
+            return 0
         # This is in radians
         theta = math.acos( (b**2 + c**2 - a**2) / (2 * b * c) )
         # x = sine( theta * b)
