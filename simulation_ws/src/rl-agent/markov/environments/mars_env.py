@@ -380,7 +380,8 @@ class MarsEnv(gym.Env):
             b = self.collision_threshold
             multiplier = 1  # Award the rover for the good behaviour of getting away from an obstacle
         c = self.distance_since_last_reward()
-        if c == 0:
+        # The rover didn't move or the object detected different from the previous object
+        if c == 0 or b > (a + c):
             return 0
         # This is in radians
         theta = math.acos( (b**2 + c**2 - a**2) / (2 * b * c) )
