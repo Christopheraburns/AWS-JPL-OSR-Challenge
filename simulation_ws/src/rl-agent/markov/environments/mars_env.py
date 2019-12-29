@@ -23,6 +23,8 @@ from std_msgs.msg import Float64
 from std_msgs.msg import String
 from PIL import Image
 import queue
+import traceback
+import logging
 
 
 VERSION = "0.0.1"
@@ -380,11 +382,18 @@ class MarsEnv(gym.Env):
             b = self.collision_threshold
             multiplier = 1  # Award the rover for the good behaviour of getting away from an obstacle
         c = self.distance_since_last_reward()
-        # The rover didn't move or the object detected different from the previous object
-        if c == 0 or b > (a + c):
+        if c == 0:
             return 0
-        # This is in radians
-        theta = math.acos( (b**2 + c**2 - a**2) / (2 * b * c) )
+        theta = None
+        try:
+            # This is in radians
+            theta = math.acos( (b**2 + c**2 - a**2) / (2 * b * c) )
+        except ValueError as e:
+            logging.info("+++++++++++++++++++++++++++++++++++ VALUE ERROR +++++++++++++++++++++++++++++++++++")
+            logging.info("a=%s, b=%s, c=%s" % (self.collision_threshold, b, self.last_collision_threshold))
+            logging.info("-----------------------------------------------------------------------------------")
+            traceback.print_exc()
+            return 0
         # x = sine( theta * b)
         # y = square_root( b^2 - x ^ 2 )
         # If just considering positions, x and y would become the horizontal and vertical lane respectively
