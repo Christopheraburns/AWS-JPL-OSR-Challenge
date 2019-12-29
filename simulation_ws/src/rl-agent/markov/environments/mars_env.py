@@ -27,6 +27,8 @@ import traceback
 import logging
 
 
+logger = logging.getLogger(__name__)
+
 VERSION = "0.0.1"
 TRAINING_IMAGE_WIDTH = 160
 TRAINING_IMAGE_HEIGHT = 120
@@ -389,9 +391,9 @@ class MarsEnv(gym.Env):
             # This is in radians
             theta = math.acos( (b**2 + c**2 - a**2) / (2 * b * c) )
         except ValueError as e:
-            logging.info("+++++++++++++++++++++++++++++++++++ VALUE ERROR +++++++++++++++++++++++++++++++++++")
-            logging.info("a=%s, b=%s, c=%s" % (self.collision_threshold, b, self.last_collision_threshold))
-            logging.info("-----------------------------------------------------------------------------------")
+            logger.info("+++++++++++++++++++++++++++++++++++ VALUE ERROR +++++++++++++++++++++++++++++++++++")
+            logger.info("a=%s, b=%s, c=%s" % (self.collision_threshold, b, self.last_collision_threshold))
+            logger.info("-----------------------------------------------------------------------------------")
             traceback.print_exc()
             return 0
         # x = sine( theta * b)
