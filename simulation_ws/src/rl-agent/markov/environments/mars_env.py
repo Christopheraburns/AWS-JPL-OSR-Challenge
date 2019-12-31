@@ -40,7 +40,7 @@ IMG_QUEUE_BUF_SIZE = 1
 MAX_STEPS = 2000
 
 # Destination Point
-CHECKPOINT_X = 44.25
+CHECKPOINT_X = -44.25
 CHECKPOINT_Y = -4
 
 # Initial position of the robot
@@ -400,37 +400,33 @@ class MarsEnv(gym.Env):
 
     def probably_stuck(self):
         """This function is totally unnecessary if the `self.collision` variable gets updated."""
-        MAX_RECENT = 80
-        if not hasattr(self, "recent_steps"):
-            self.odd_distances_in_recent_rewards = []
-            self.even_distances_in_recent_rewards = []
-            self.recent_steps = []
+        MAX_RECENT = 400  # 1/5 of the available steps
+
+        if not hasattr(self, "distances_in_recent_steps"):
+            self.distances_in_recent_steps = {"odd": [], "even": []}
         # Uses distance to checkpoint to see if the rover actually moved
         distance = int(self.current_distance_to_checkpoint)
         is_even = bool(distance % 2)
         is_odd = not is_even
         is_exact_int = distance == self.current_distance_to_checkpoint
         if is_exact_int:
-            self.even_distances_in_recent_rewards.insert(0, distance if is_even else (distance + 1))
-            self.odd_distances_in_recent_rewards.insert(0, distance if is_odd else (distance + 1))
+            self.distances_in_recent_steps["even"].insert(0, distance if is_even else (distance + 1))
+            self.distances_in_recent_steps["odd"].insert(0, distance if is_odd else (distance + 1))
         else:
             # Numbers like 2.1 -> odd = 3 even = 4 | 6.5 -> odd = 7 even = 8
             # Number like 1.1 -> odd = 3 even = 2 | 5.5 -> odd = 7 even = 6
-            self.even_distances_in_recent_rewards.insert(0, (distance + 2) if is_even else (distance + 1))
-            self.odd_distances_in_recent_rewards.insert(0, (distance + 2) if is_odd else (distance + 1))
+            self.distances_in_recent_steps["even"].insert(0, (distance + 2) if is_even else (distance + 1))
+            self.distances_in_recent_steps["odd"].insert(0, (distance + 2) if is_odd else (distance + 1))
 
-        self.recent_steps.insert(0, self.power_supply_range)
-        self.odd_distances_in_recent_rewards = self.odd_distances_in_recent_rewards[0:MAX_RECENT]
-        self.even_distances_in_recent_rewards = self.even_distances_in_recent_rewards[0:MAX_RECENT]
-        self.recent_steps = self.recent_steps[0:MAX_RECENT]
-
-        if len(self.recent_steps) < MAX_RECENT:
+        if len(self.distances_in_recent_steps["even"]) < MAX_RECENT:
             return False
-        min_steps = self.recent_steps[MAX_RECENT - 1]  # The first item to be appended
-        max_steps = self.recent_steps[0]  # The most recent item to be appended
-        # Over 40 steps taken but barely moved an inch
+
+        self.distances_in_recent_steps["odd"] = self.distances_in_recent_steps["odd"][0:MAX_RECENT]
+        self.distances_in_recent_steps["even"] = self.distances_in_recent_steps["even"][0:MAX_RECENT]
+
+        # Over MAX_RECENT steps taken but barely moved two meters
         barely_moved = len(set(self.odd_distances_in_recent_rewards)) or len(set(self.even_distances_in_recent_rewards))
-        if (abs(max_steps - min_steps) > (MAX_RECENT/2)) and barely_moved:
+        if barely_moved:
             return True
         return False
 
@@ -457,16 +453,20 @@ class MarsEnv(gym.Env):
         STAGE_Y_MAX = 22.0
 
         # REWARD Multipliers
-        FINISHED_REWARD = 1000
+        FINISHED_REWARD = 10000
+        COLLISION_PUNISHMENT = 1000
+        OUT_OF_FUEL_PUNISHMENT = 1000
+        LEFT_THE_WORLD_PUNISHMENT = 2500
+        CLOSER_TO_CHECKPOINT_REWARD = 4
+
 
         reward = 0
         end_episode = False
-        base_reward = 2
 
         if self.closer_to_checkpoint:
-            reward += positive_multiplier * base_reward
+            reward += positive_multiplier * CLOSER_TO_CHECKPOINT_REWARD
         else:
-            reward -= negative_multiplier * base_reward
+            reward -= negative_multiplier * CLOSER_TO_CHECKPOINT_REWARD
 
         if collision_probability > 0:
             reward += positive_multiplier * collision_probability
@@ -480,21 +480,27 @@ class MarsEnv(gym.Env):
             
             # Has LIDAR registered a hit
             if self.collision_threshold <= CRASH_DISTANCE:
+                reward -= COLLISION_PUNISHMENT * negative_multiplier
                 print("Rover has sustained sideswipe damage")
                 end_episode = True
             
             # ~Have the gravity sensors registered too much G-force~
             if self.collision or self.probably_stuck():
+                reward -= COLLISION_PUNISHMENT * negative_multiplier
                 print("Rover has collided with an object")
                 end_episode = True
             
             # Has the rover reached the max steps
             if self.power_supply_range < 1:
+                reward -= OUT_OF_FUEL_PUNISHMENT * negative_multiplier
                 print("Rover's power supply has been drained (MAX Steps reached")
                 end_episode = True
             
             # Has the Rover reached the destination
-            if self.last_position_x >= CHECKPOINT_X and self.last_position_y >= CHECKPOINT_Y:
+            # Allow a 1m over wrap
+            apx_on_checkpoint_x = (CHECKPOINT_X - 0.5) <= self.x <= (CHECKPOINT_X + 0.5)
+            apx_on_checkpoint_y = (CHECKPOINT_Y - 0.5) <= self.y <= (CHECKPOINT_Y + 0.5)
+            if apx_on_checkpoint_x and apx_on_checkpoint_y:
                 print("Congratulations! The rover has reached the checkpoint!")
                 # <-- incentivize to reach checkpoint in a shorter distance
                 reward += positive_multiplier * FINISHED_REWARD * (INITIAL_DISTANCE_TO_CHECKPOINT/self.distance_travelled)
@@ -502,17 +508,17 @@ class MarsEnv(gym.Env):
             
             # If it has not reached the check point is it still on the map?
             if self.x < (STAGE_X_MIN - .45) or self.x > (STAGE_X_MAX + .45):
+                reward -= LEFT_THE_WORLD_PUNISHMENT * negative_multiplier
                 print("Rover has gone beyond the world!")
                 end_episode = True
 
             if self.y < (STAGE_Y_MIN - .45) or self.y > (STAGE_Y_MAX + .45):
+                reward -= LEFT_THE_WORLD_PUNISHMENT * negative_multiplier
                 print("Rover has gone beyond the world!")
                 end_episode = True
 
-        if end_episode and hasattr(self, "recent_steps"):
-            self.odd_distances_in_recent_rewards = []
-            self.even_distances_in_recent_rewards = []
-            self.recent_steps = []
+        if end_episode and hasattr(self, "distances_in_recent_steps"):
+            self.distances_in_recent_steps = {"odd": [], "even": []}
         
         return reward, end_episode
     
