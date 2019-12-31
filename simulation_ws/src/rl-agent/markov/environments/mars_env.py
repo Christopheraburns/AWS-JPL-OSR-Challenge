@@ -23,11 +23,6 @@ from std_msgs.msg import Float64
 from std_msgs.msg import String
 from PIL import Image
 import queue
-import traceback
-import logging
-
-
-logger = logging.getLogger(__name__)
 
 VERSION = "0.0.1"
 TRAINING_IMAGE_WIDTH = 160
@@ -386,16 +381,10 @@ class MarsEnv(gym.Env):
         c = self.distance_since_last_reward()
         if c == 0:
             return 0
-        theta = None
-        try:
-            # This is in radians
-            theta = math.acos( (b**2 + c**2 - a**2) / (2 * b * c) )
-        except ValueError as e:
-            logger.info("+++++++++++++++++++++++++++++++++++ VALUE ERROR +++++++++++++++++++++++++++++++++++")
-            logger.info("a=%s, b=%s, c=%s" % (self.collision_threshold, b, self.last_collision_threshold))
-            logger.info("-----------------------------------------------------------------------------------")
-            traceback.print_exc()
+        # These can't actually be a triangle and hence the rover must be tracking a different object
+        if c > (a + b) or b > (a + c) or a > (b + c):
             return 0
+        theta = math.acos( (b**2 + c**2 - a**2) / (2 * b * c) )
         # x = sine( theta * b)
         # y = square_root( b^2 - x ^ 2 )
         # If just considering positions, x and y would become the horizontal and vertical lane respectively
@@ -408,6 +397,42 @@ class MarsEnv(gym.Env):
         if side_swipe_probability < 0:
             side_swipe_probability = 0
         return collision_probability * side_swipe_probability * multiplier
+
+    def probably_stuck(self):
+        """This function is totally unnecessary if the `self.collision` variable gets updated."""
+        MAX_RECENT = 80
+        if hasattr(self, "distances_in_last_100_steps"):
+            self.odd_distances_in_recent_rewards = []
+            self.even_distances_in_recent_rewards = []
+            self.recent_steps = []
+        # Uses distance to checkpoint to see if the rover actually moved
+        distance = int(self.current_distance_to_checkpoint)
+        is_even = bool(distance % 2)
+        is_odd = not is_even
+        is_exact_int = distance == self.current_distance_to_checkpoint
+        if is_exact_int:
+            self.even_distances_in_recent_rewards.insert(0, distance if is_even else (distance + 1))
+            self.odd_distances_in_recent_rewards.insert(0, distance if is_odd else (distance + 1))
+        else:
+            # Numbers like 2.1 -> odd = 3 even = 4 | 6.5 -> odd = 7 even = 8
+            # Number like 1.1 -> odd = 3 even = 2 | 5.5 -> odd = 7 even = 6
+            self.even_distances_in_recent_rewards.insert(0, (distance + 2) if is_even else (distance + 1))
+            self.odd_distances_in_recent_rewards.insert(0, (distance + 2) if is_odd else (distance + 1))
+
+        self.recent_steps.insert(0, self.power_supply_range)
+        self.odd_distances_in_recent_rewards = self.odd_distances_in_recent_rewards[0:MAX_RECENT]
+        self.even_distances_in_recent_rewards = self.even_distances_in_recent_rewards[0:MAX_RECENT]
+        self.recent_steps = self.recent_steps[0:MAX_RECENT]
+
+        if len(self.recent_steps) < MAX_RECENT:
+            return False
+        min_steps = self.recent_steps[MAX_RECENT - 1]  # The first item to be appended
+        max_steps = self.recent_steps[0]  # The most recent item to be appended
+        # Over 40 steps taken but barely moved an inch
+        barely_moved = len(set(self.odd_distances_in_recent_rewards)) or len(set(self.even_distances_in_recent_rewards))
+        if (abs(max_steps - min_steps) > (MAX_RECENT/2)) and barely_moved:
+            return True
+        return False
 
 
     '''
@@ -435,6 +460,7 @@ class MarsEnv(gym.Env):
         FINISHED_REWARD = 1000
 
         reward = 0
+        end_episode = False
         base_reward = 2
 
         if self.closer_to_checkpoint:
@@ -455,35 +481,40 @@ class MarsEnv(gym.Env):
             # Has LIDAR registered a hit
             if self.collision_threshold <= CRASH_DISTANCE:
                 print("Rover has sustained sideswipe damage")
-                return reward, True
+                end_episode = True
             
-            # Have the gravity sensors registered too much G-force
-            if self.collision:
+            # ~Have the gravity sensors registered too much G-force~
+            if self.collision or self.probably_stuck():
                 print("Rover has collided with an object")
-                return reward, True
+                end_episode = True
             
             # Has the rover reached the max steps
             if self.power_supply_range < 1:
                 print("Rover's power supply has been drained (MAX Steps reached")
-                return reward, True
+                end_episode = True
             
             # Has the Rover reached the destination
             if self.last_position_x >= CHECKPOINT_X and self.last_position_y >= CHECKPOINT_Y:
                 print("Congratulations! The rover has reached the checkpoint!")
                 # <-- incentivize to reach checkpoint in a shorter distance
                 reward += positive_multiplier * FINISHED_REWARD * (INITIAL_DISTANCE_TO_CHECKPOINT/self.distance_travelled)
-                return reward, True
+                end_episode = True
             
             # If it has not reached the check point is it still on the map?
             if self.x < (STAGE_X_MIN - .45) or self.x > (STAGE_X_MAX + .45):
                 print("Rover has gone beyond the world!")
-                return reward, True
+                end_episode = True
 
             if self.y < (STAGE_Y_MIN - .45) or self.y > (STAGE_Y_MAX + .45):
                 print("Rover has gone beyond the world!")
-                return reward, True
+                end_episode = True
+
+        if end_episode:
+            self.odd_distances_in_recent_rewards = []
+            self.even_distances_in_recent_rewards = []
+            self.recent_steps = []
         
-        return reward, False
+        return reward, end_episode
     
         
     '''
