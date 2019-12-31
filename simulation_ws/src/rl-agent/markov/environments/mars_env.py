@@ -401,7 +401,7 @@ class MarsEnv(gym.Env):
     def probably_stuck(self):
         """This function is totally unnecessary if the `self.collision` variable gets updated."""
         MAX_RECENT = 80
-        if hasattr(self, "distances_in_last_100_steps"):
+        if not hasattr(self, "recent_steps"):
             self.odd_distances_in_recent_rewards = []
             self.even_distances_in_recent_rewards = []
             self.recent_steps = []
