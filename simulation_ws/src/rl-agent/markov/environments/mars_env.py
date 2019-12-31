@@ -509,7 +509,7 @@ class MarsEnv(gym.Env):
                 print("Rover has gone beyond the world!")
                 end_episode = True
 
-        if end_episode:
+        if end_episode and hasattr(self, "recent_steps"):
             self.odd_distances_in_recent_rewards = []
             self.even_distances_in_recent_rewards = []
             self.recent_steps = []
