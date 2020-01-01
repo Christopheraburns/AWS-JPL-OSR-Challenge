@@ -425,7 +425,7 @@ class MarsEnv(gym.Env):
         self.distances_in_recent_steps["even"] = self.distances_in_recent_steps["even"][0:MAX_RECENT]
 
         # Over MAX_RECENT steps taken but barely moved two meters
-        barely_moved = len(set(self.odd_distances_in_recent_rewards)) or len(set(self.even_distances_in_recent_rewards))
+        barely_moved = (len(set(self.distances_in_recent_steps["odd"])) == 1) or (len(set(self.distances_in_recent_steps["odd"])) == 1)
         if barely_moved:
             return True
         return False
