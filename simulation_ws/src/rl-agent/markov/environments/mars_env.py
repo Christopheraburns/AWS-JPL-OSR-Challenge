@@ -443,7 +443,7 @@ class MarsEnv(gym.Env):
                  done as boolean
         '''
         positive_multiplier, negative_multiplier = self.get_reward_multiplier()
-        collision_probability = self.score_based_on_collision_probability()
+        collision_probability_score = self.score_based_on_collision_probability()
         self.last_collision_threshold = self.collision_threshold
         
         # Corner boundaries of the world (in Meters)
@@ -463,15 +463,27 @@ class MarsEnv(gym.Env):
         reward = 0
         end_episode = False
 
-        if self.closer_to_checkpoint:
-            reward += positive_multiplier * CLOSER_TO_CHECKPOINT_REWARD
+        # Closer to checkpoint can get in the wa of collision probability
+        # It's best to combine them
+        if collision_probability_score:
+            # Reward if the rover moves away from an object and closer to destination
+            if self.closer_to_checkpoint and collision_probability_score > 0:
+                reward += positive_multiplier * (CLOSER_TO_CHECKPOINT_REWARD/2) * collision_probability_score
+            # Reward for moving away from an object, don't punish for moving away from destination
+            elif collision_probability_score > 0:
+                reward += positive_multiplier * collision_probability_score
+            # Collision probability is high i.e. Score is Less than 0
+            # Punish for getting closer to an object, ignore moving closer to destination
+            elif self.closer_to_checkpoint:
+                reward += negative_multiplier * collision_probability_score
+            # Punish for moving away from checkpoint and approaching an object
+            else:
+                reward += negative_multiplier * (CLOSER_TO_CHECKPOINT_REWARD/2) * collision_probability_score
         else:
-            reward -= negative_multiplier * CLOSER_TO_CHECKPOINT_REWARD
-
-        if collision_probability > 0:
-            reward += positive_multiplier * collision_probability
-        else:
-            reward += negative_multiplier * collision_probability
+            if self.closer_to_checkpoint:
+                reward += positive_multiplier * CLOSER_TO_CHECKPOINT_REWARD
+            else:
+                reward -= negative_multiplier * CLOSER_TO_CHECKPOINT_REWARD
         
         if self.steps > 0:
             
