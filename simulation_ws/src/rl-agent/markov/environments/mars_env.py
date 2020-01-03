@@ -400,7 +400,7 @@ class MarsEnv(gym.Env):
 
     def probably_stuck(self):
         """This function is totally unnecessary if the `self.collision` variable gets updated."""
-        MAX_RECENT = 400  # 1/5 of the available steps
+        MAX_RECENT = 200  # 1/5 of the available steps
 
         if not hasattr(self, "distances_in_recent_steps"):
             self.distances_in_recent_steps = {"odd": [], "even": []}
@@ -454,14 +454,12 @@ class MarsEnv(gym.Env):
 
         # REWARD Multipliers
         FINISHED_REWARD = 10000
-        COLLISION_PUNISHMENT = 1000
-        OUT_OF_FUEL_PUNISHMENT = 1000
-        LEFT_THE_WORLD_PUNISHMENT = 2500
         CLOSER_TO_CHECKPOINT_REWARD = 4
-
 
         reward = 0
         end_episode = False
+        if not hasattr(self, "last_distance_to_checkpoint"):
+            self.last_distance_to_checkpoint = INITIAL_DISTANCE_TO_CHECKPOINT
 
         # Closer to checkpoint can get in the wa of collision probability
         # It's best to combine them
@@ -480,11 +478,15 @@ class MarsEnv(gym.Env):
             else:
                 reward += negative_multiplier * (CLOSER_TO_CHECKPOINT_REWARD/2) * collision_probability_score
         else:
+            distance_covered = abs(self.current_distance_to_checkpoint - self.last_distance_to_checkpoint)
+            # Reward based on distance covered
             if self.closer_to_checkpoint:
-                reward += positive_multiplier * CLOSER_TO_CHECKPOINT_REWARD
+                reward += positive_multiplier * CLOSER_TO_CHECKPOINT_REWARD * distance_covered
             else:
-                reward -= negative_multiplier * CLOSER_TO_CHECKPOINT_REWARD
-        
+                reward -= negative_multiplier * CLOSER_TO_CHECKPOINT_REWARD * distance_covered
+
+        self.last_distance_to_checkpoint = self.current_distance_to_checkpoint
+
         if self.steps > 0:
             
             # Check for episode ending events first
@@ -492,19 +494,16 @@ class MarsEnv(gym.Env):
             
             # Has LIDAR registered a hit
             if self.collision_threshold <= CRASH_DISTANCE:
-                reward -= COLLISION_PUNISHMENT * negative_multiplier
                 print("Rover has sustained sideswipe damage")
                 end_episode = True
             
             # ~Have the gravity sensors registered too much G-force~
             if self.collision or self.probably_stuck():
-                reward -= COLLISION_PUNISHMENT * negative_multiplier
                 print("Rover has collided with an object")
                 end_episode = True
             
             # Has the rover reached the max steps
             if self.power_supply_range < 1:
-                reward -= OUT_OF_FUEL_PUNISHMENT * negative_multiplier
                 print("Rover's power supply has been drained (MAX Steps reached")
                 end_episode = True
             
@@ -518,19 +517,15 @@ class MarsEnv(gym.Env):
                 reward += positive_multiplier * FINISHED_REWARD * (INITIAL_DISTANCE_TO_CHECKPOINT/self.distance_travelled)
                 end_episode = True
             
-            # If it has not reached the check point is it still on the map?
-            if self.x < (STAGE_X_MIN - .45) or self.x > (STAGE_X_MAX + .45):
-                reward -= LEFT_THE_WORLD_PUNISHMENT * negative_multiplier
-                print("Rover has gone beyond the world!")
-                end_episode = True
-
-            if self.y < (STAGE_Y_MIN - .45) or self.y > (STAGE_Y_MAX + .45):
-                reward -= LEFT_THE_WORLD_PUNISHMENT * negative_multiplier
+            # If it has not reached the check point is it still on the map
+            on_the_map = ((STAGE_X_MIN - .45) < self.x < (STAGE_X_MAX + .45)) or ((STAGE_Y_MIN - .45) < self.y < (STAGE_Y_MAX + .45))
+            if not on_the_map:
                 print("Rover has gone beyond the world!")
                 end_episode = True
 
         if end_episode and hasattr(self, "distances_in_recent_steps"):
             self.distances_in_recent_steps = {"odd": [], "even": []}
+            self.last_distance_to_checkpoint = INITIAL_DISTANCE_TO_CHECKPOINT
         
         return reward, end_episode
     
