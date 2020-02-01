@@ -14,7 +14,7 @@ import sys
 import rospy
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist, Pose, Quaternion
-from gazebo_msgs.srv import SetModelState
+from gazebo_msgs.srv import SetModelState, SetModelConfiguration
 from gazebo_msgs.msg import ModelState, ContactsState
 from sensor_msgs.msg import Image as sensor_image
 from sensor_msgs.msg import LaserScan
@@ -123,6 +123,7 @@ class RoverTrainingGroundsEnv(gym.Env):
         # ################################################################################
 
         self.gazebo_model_state_service = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
+        self.gazebo_model_configuration_service = rospy.ServiceProxy('/gazebo/set_model_configuration', SetModelConfiguration)
         rospy.init_node('rl_coach', anonymous=True)
 
         # Subscribe to ROS topics and register callbacks
@@ -212,7 +213,32 @@ class RoverTrainingGroundsEnv(gym.Env):
         model_state.twist.angular.z = 0
         model_state.model_name = 'rover'
 
+        # List of joints to reset (this is all of them)
+        joint_names_list = ["rocker_left_corner_lb",
+                            "rocker_right_corner_rb",
+                            "body_rocker_left",
+                            "body_rocker_right",
+                            "rocker_right_bogie_right",
+                            "rocker_left_bogie_left",
+                            "bogie_left_corner_lf",
+                            "bogie_right_corner_rf",
+                            "corner_lf_wheel_lf",
+                            "imu_wheel_lf_joint",
+                            "bogie_left_wheel_lm",
+                            "imu_wheel_lm_joint",
+                            "corner_lb_wheel_lb",
+                            "imu_wheel_lb_joint",
+                            "corner_rf_wheel_rf",
+                            "imu_wheel_rf_joint",
+                            "bogie_right_wheel_rm",
+                            "imu_wheel_rm_joint",
+                            "corner_rb_wheel_rb",
+                            "imu_wheel_rb_joint"]
+        # Angle to reset joints to
+        joint_positions_list = [0 for _ in range(len(joint_names_list))]
+
         self.gazebo_model_state_service(model_state)
+        self.gazebo_model_configuration_service(model_name='rover', urdf_param_name='rover_description', joint_names=joint_names_list, joint_positions=joint_positions_list)
 
         self.last_collision_threshold = sys.maxsize
         self.last_position_x = self.x
