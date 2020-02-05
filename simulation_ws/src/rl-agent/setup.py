@@ -11,7 +11,7 @@ setup(
     install_requires=[
        'boto3==1.9.23',
         'futures==3.1.1',
-        'gym==0.10.5',
+        'gym',
         'kubernetes==7.0.0',
         'minio==4.0.5',
         'numpy==1.14.5',
@@ -23,7 +23,7 @@ setup(
         'rospkg==1.1.7',
         'scipy==0.19.0',
         'tensorflow==1.12.2',
-        'rl-coach-slim==0.11.1',
+        'rl-coach-slim',
     ],
     entry_points = {
         'console_scripts': [

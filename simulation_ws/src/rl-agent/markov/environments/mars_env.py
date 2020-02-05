@@ -623,22 +623,26 @@ class MarsDiscreteEnv(MarsEnv):
         print("New Martian Gym environment created...")
         
         # actions -> straight, left, right
-        self.action_space = spaces.Discrete(3)
+        ## Commenting out to enable continuous space algorithms
+        # self.action_space = spaces.Discrete(3)
 
     def step(self, action):
         # Convert discrete to continuous
-        if action == 0:  # turn left
-            steering = 1.0
-            throttle = 3.00
-        elif action == 1:  # turn right
-            steering = -1.0
-            throttle = 3.00
-        elif action == 2:  # straight
-            steering = 0
-            throttle = 3.00
-        else:  # should not be here
-            raise ValueError("Invalid action")
+        ##Keeping continuous space intact
+        # if action == 0:  # turn left
+        #     steering = 1.0
+        #     throttle = 3.00
+        # elif action == 1:  # turn right
+        #     steering = -1.0
+        #     throttle = 3.00
+        # elif action == 2:  # straight
+        #     steering = 0
+        #     throttle = 3.00
+        # else:  # should not be here
+        #     raise ValueError("Invalid action")
+        #
+        # continuous_action = [steering, throttle]
+        #
+        # return super().step(continuous_action)
 
-        continuous_action = [steering, throttle]
-
-        return super().step(continuous_action)
+        return super().step(action)
