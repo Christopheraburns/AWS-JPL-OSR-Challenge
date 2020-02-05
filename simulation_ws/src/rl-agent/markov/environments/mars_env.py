@@ -24,7 +24,6 @@ from std_msgs.msg import String
 from PIL import Image
 import queue
 
-
 VERSION = "0.0.1"
 TRAINING_IMAGE_WIDTH = 160
 TRAINING_IMAGE_HEIGHT = 120
@@ -41,7 +40,7 @@ IMG_QUEUE_BUF_SIZE = 1
 MAX_STEPS = 2000
 
 # Destination Point
-CHECKPOINT_X = 44.25
+CHECKPOINT_X = -44.25
 CHECKPOINT_Y = -4
 
 # Initial position of the robot
@@ -341,6 +340,122 @@ class MarsEnv(gym.Env):
         self.last_position_y = self.y
 
 
+    def get_reward_multiplier(self):
+        """
+        Calculates how much to multiply positive and negative rewards with based on distance to destination and
+        the number of steps
+
+        Positive reward:
+            (steps remaining)/(Total steps) + (distance from origin)/(distance from destination to origin)
+            With the above calculation, the multiplier begins at 1
+            Increases as we approach destination using less steps
+            Decreases the more steps we use to get to destination
+        Negative reward:
+            (steps taken)/(total steps) + (distance to destination)/(distance from destination to origin)
+            Similar to the positive reward this value starts at 1,
+            Increases as we take more steps but not getting closer to destination
+            Decreases with less steps taken while approaching destination
+            The negative multiplier should never go below 0.4
+        :return: positive and negative reward multiplier as a tuple
+        """
+        total_steps = MAX_STEPS
+        steps_remaining = self.power_supply_range
+        steps_taken = total_steps - steps_remaining
+
+        total_distance = INITIAL_DISTANCE_TO_CHECKPOINT
+        distance_to_checkpoint = self.current_distance_to_checkpoint
+        distance_from_origin = total_distance - distance_to_checkpoint
+
+        # Positive reward multiplier
+        positive_reward_multiplier = (steps_remaining/total_steps) + (distance_from_origin/total_distance)
+        negative_reward_multiplier = (steps_taken/total_steps) + (distance_to_checkpoint/total_distance)
+        if negative_reward_multiplier < 0.4:
+            negative_reward_multiplier = 0.4
+        return positive_reward_multiplier, negative_reward_multiplier
+
+    def distance_since_last_reward(self):
+        return math.sqrt(((self.last_position_x-self.x)**2) + ((self.last_position_y - self.y)**2))
+
+    def score_based_on_collision_probability(self):
+        """
+        Calculates position on the lidar vision given current and previous collision threshold
+        and distance covered between the two thresholds
+
+        Reference image: https://photos.app.goo.gl/ruGPgBEovdmUUNv48
+        :return: positive or negative score as float
+        """
+        # Assuming the position at which lidar is sitting is (0,0) always
+        # To calculate the position of the object. the object must be within lidar range
+        # The rover must have moved from point to point before identifying the lane
+
+        # We're not any where near colliding and
+        # We must have both thresholds to calculate the probability change
+        if self.collision_threshold >= 4.5 or self.last_collision_threshold >= 4.5:
+            return 0
+
+        # For calculations of the position reference: https://photos.app.goo.gl/54FipncQxmjT1NGV6
+        # let BC = a, AC = b, BA=c, theta = Angle at A
+        # theta = cosine_inverse( (b^2 + c^2 - a^2 ) / (2bc) )
+        a = self.collision_threshold
+        b = self.last_collision_threshold
+        multiplier = -1  # Applies if collision threshold increases, punish the rover
+        # To take note of a move away from an object, collision threshold is greater than the last one
+        if a > b:
+            a = self.last_collision_threshold
+            b = self.collision_threshold
+            multiplier = 1  # Award the rover for the good behaviour of getting away from an obstacle
+        c = self.distance_since_last_reward()
+        if c == 0:
+            return 0
+        # These can't actually be a triangle and hence the rover must be tracking a different object
+        if c > (a + b) or b > (a + c) or a > (b + c):
+            return 0
+        theta = math.acos( (b**2 + c**2 - a**2) / (2 * b * c) )
+        # x = sine( theta * b)
+        # y = square_root( b^2 - x ^ 2 )
+        # If just considering positions, x and y would become the horizontal and vertical lane respectively
+        x = math.sin(theta) * b
+        y = math.sqrt(b**2 - x **2)
+        collision_probability, side_swipe_probability = 4 - y, 3 - x
+
+        if collision_probability < 0:
+            collision_probability = 0
+        if side_swipe_probability < 0:
+            side_swipe_probability = 0
+        return collision_probability * side_swipe_probability * multiplier
+
+    def probably_stuck(self):
+        """This function is totally unnecessary if the `self.collision` variable gets updated."""
+        MAX_RECENT = 200  # 1/5 of the available steps
+
+        if not hasattr(self, "distances_in_recent_steps"):
+            self.distances_in_recent_steps = {"odd": [], "even": []}
+        # Uses distance to checkpoint to see if the rover actually moved
+        distance = int(self.current_distance_to_checkpoint)
+        is_even = bool(distance % 2)
+        is_odd = not is_even
+        is_exact_int = distance == self.current_distance_to_checkpoint
+        if is_exact_int:
+            self.distances_in_recent_steps["even"].insert(0, distance if is_even else (distance + 1))
+            self.distances_in_recent_steps["odd"].insert(0, distance if is_odd else (distance + 1))
+        else:
+            # Numbers like 2.1 -> odd = 3 even = 4 | 6.5 -> odd = 7 even = 8
+            # Number like 1.1 -> odd = 3 even = 2 | 5.5 -> odd = 7 even = 6
+            self.distances_in_recent_steps["even"].insert(0, (distance + 2) if is_even else (distance + 1))
+            self.distances_in_recent_steps["odd"].insert(0, (distance + 2) if is_odd else (distance + 1))
+
+        if len(self.distances_in_recent_steps["even"]) < MAX_RECENT:
+            return False
+
+        self.distances_in_recent_steps["odd"] = self.distances_in_recent_steps["odd"][0:MAX_RECENT]
+        self.distances_in_recent_steps["even"] = self.distances_in_recent_steps["even"][0:MAX_RECENT]
+
+        # Over MAX_RECENT steps taken but barely moved two meters
+        barely_moved = (len(set(self.distances_in_recent_steps["odd"])) == 1) or (len(set(self.distances_in_recent_steps["odd"])) == 1)
+        if barely_moved:
+            return True
+        return False
+
 
     '''
     EDIT - but do not change the function signature. 
@@ -353,42 +468,51 @@ class MarsEnv(gym.Env):
         :return: reward as float
                  done as boolean
         '''
+        positive_multiplier, negative_multiplier = self.get_reward_multiplier()
+        collision_probability_score = self.score_based_on_collision_probability()
+        self.last_collision_threshold = self.collision_threshold
         
         # Corner boundaries of the world (in Meters)
         STAGE_X_MIN = -44.0
         STAGE_Y_MIN = -25.0
         STAGE_X_MAX = 15.0
         STAGE_Y_MAX = 22.0
-        
-        
-        GUIDERAILS_X_MIN = -46
-        GUIDERAILS_X_MAX = 1
-        GUIDERAILS_Y_MIN = -6
-        GUIDERAILS_Y_MAX = 4
-        
-        
-        # WayPoints to checkpoint
-        WAYPOINT_1_X = -10
-        WAYPOINT_1_Y = -4
-        
-        WAYPOINT_2_X = -17
-        WAYPOINT_2_Y = 3
-        
-        WAYPOINT_3_X = -34
-        WAYPOINT_3_Y = 3
-        
+
         # REWARD Multipliers
         FINISHED_REWARD = 10000
-        WAYPOINT_1_REWARD = 1000
-        WAYPOINT_2_REWARD = 2000
-        WAYPOINT_3_REWARD = 3000
+        CLOSER_TO_CHECKPOINT_REWARD = 4
 
         reward = 0
-        base_reward = 2
-        multiplier = 0
-        done = False
-        
-        
+        end_episode = False
+        if not hasattr(self, "last_distance_to_checkpoint"):
+            self.last_distance_to_checkpoint = INITIAL_DISTANCE_TO_CHECKPOINT
+
+        # Closer to checkpoint can get in the wa of collision probability
+        # It's best to combine them
+        if collision_probability_score:
+            # Reward if the rover moves away from an object and closer to destination
+            if self.closer_to_checkpoint and collision_probability_score > 0:
+                reward += positive_multiplier * (CLOSER_TO_CHECKPOINT_REWARD/2) * collision_probability_score
+            # Reward for moving away from an object, don't punish for moving away from destination
+            elif collision_probability_score > 0:
+                reward += positive_multiplier * collision_probability_score
+            # Collision probability is high i.e. Score is Less than 0
+            # Punish for getting closer to an object, ignore moving closer to destination
+            elif self.closer_to_checkpoint:
+                reward += negative_multiplier * collision_probability_score
+            # Punish for moving away from checkpoint and approaching an object
+            else:
+                reward += negative_multiplier * (CLOSER_TO_CHECKPOINT_REWARD/2) * collision_probability_score
+        else:
+            distance_covered = abs(self.current_distance_to_checkpoint - self.last_distance_to_checkpoint)
+            # Reward based on distance covered
+            if self.closer_to_checkpoint:
+                reward += positive_multiplier * CLOSER_TO_CHECKPOINT_REWARD * distance_covered
+            else:
+                reward -= negative_multiplier * CLOSER_TO_CHECKPOINT_REWARD * distance_covered
+
+        self.last_distance_to_checkpoint = self.current_distance_to_checkpoint
+
         if self.steps > 0:
             
             # Check for episode ending events first
@@ -397,105 +521,39 @@ class MarsEnv(gym.Env):
             # Has LIDAR registered a hit
             if self.collision_threshold <= CRASH_DISTANCE:
                 print("Rover has sustained sideswipe damage")
-                return 0, True # No reward
+                end_episode = True
             
-            # Have the gravity sensors registered too much G-force
-            if self.collision:
+            # ~Have the gravity sensors registered too much G-force~
+            if self.collision or self.probably_stuck():
                 print("Rover has collided with an object")
-                return 0, True # No reward
+                end_episode = True
             
             # Has the rover reached the max steps
             if self.power_supply_range < 1:
                 print("Rover's power supply has been drained (MAX Steps reached")
-                return 0, True # No reward
+                end_episode = True
             
             # Has the Rover reached the destination
-            if self.last_position_x >= CHECKPOINT_X and self.last_position_y >= CHECKPOINT_Y:
+            # Allow a 1m over wrap
+            apx_on_checkpoint_x = (CHECKPOINT_X - 0.5) <= self.x <= (CHECKPOINT_X + 0.5)
+            apx_on_checkpoint_y = (CHECKPOINT_Y - 0.5) <= self.y <= (CHECKPOINT_Y + 0.5)
+            if apx_on_checkpoint_x and apx_on_checkpoint_y:
                 print("Congratulations! The rover has reached the checkpoint!")
-                multiplier = FINISHED_REWARD
-                reward = (base_reward * multiplier) / self.steps # <-- incentivize to reach checkpoint in fewest steps
-                return reward, True
+                # <-- incentivize to reach checkpoint in a shorter distance
+                reward += positive_multiplier * FINISHED_REWARD * (INITIAL_DISTANCE_TO_CHECKPOINT/self.distance_travelled)
+                end_episode = True
             
-            # If it has not reached the check point is it still on the map?
-            if self.x < (GUIDERAILS_X_MIN - .45) or self.x > (GUIDERAILS_X_MAX + .45):
-                print("Rover has left the mission map!")
-                return 0, True
-                
-                
-            if self.y < (GUIDERAILS_Y_MIN - .45) or self.y > (GUIDERAILS_Y_MAX + .45):
-                print("Rover has left the mission map!")
-                return 0, True
-            
-            
-            # No Episode ending events - continue to calculate reward
-            
-            if self.last_position_x <= WAYPOINT_1_X and self.last_position_y <= WAYPOINT_1_Y: # Rover is past the midpoint
-                # Determine if Rover already received one time reward for reaching this waypoint
-                if not self.reached_waypoint_1:  
-                    self.reached_waypoint_1 = True
-                    print("Congratulations! The rover has reached waypoint 1!")
-                    multiplier = 1 
-                    reward = (WAYPOINT_1_REWARD * multiplier)/ self.steps # <-- incentivize to reach way-point in fewest steps
-                    return reward, False
-            
-            if self.last_position_x <= WAYPOINT_2_X and self.last_position_y >= WAYPOINT_2_Y: # Rover is past the midpoint
-                # Determine if Rover already received one time reward for reaching this waypoint
-                if not self.reached_waypoint_2:  
-                    self.reached_waypoint_2 = True
-                    print("Congratulations! The rover has reached waypoint 2!")
-                    multiplier = 1 
-                    reward = (WAYPOINT_2_REWARD * multiplier)/ self.steps # <-- incentivize to reach way-point in fewest steps
-                    return reward, False
-                    
-            if self.last_position_x <= WAYPOINT_3_X and self.last_position_y >= WAYPOINT_3_Y: # Rover is past the midpoint
-                # Determine if Rover already received one time reward for reaching this waypoint
-                if not self.reached_waypoint_3:  
-                    self.reached_waypoint_3 = True
-                    print("Congratulations! The rover has reached waypoint 3!")
-                    multiplier = 1 
-                    reward = (WAYPOINT_3_REWARD * multiplier)/ self.steps # <-- incentivize to reach way-point in fewest steps
-                    return reward, False
-                    
-            
-            # To reach this point in the function the Rover has either not yet reached the way-points OR has already gotten the one time reward for reaching the waypoint(s)
-               
-            # multiply the reward based on the Rover's proximity to the Checkpoint
-            waypoint_interval = INITIAL_DISTANCE_TO_CHECKPOINT / 5 
-           
-            marker = [waypoint_interval,(waypoint_interval * 2),(waypoint_interval * 3),(waypoint_interval * 4)]
-                
-            # Get the Base multiplier
-            if self.current_distance_to_checkpoint <= marker[0]:
-                multiplier = 5
-            elif self.current_distance_to_checkpoint <= marker[1] and self.current_distance_to_checkpoint > marker[0]:
-                multiplier = 4
-            elif self.current_distance_to_checkpoint <= marker[2] and self.current_distance_to_checkpoint > marker[1]:
-                multiplier = 3
-            elif self.current_distance_to_checkpoint <= marker[3] and self.current_distance_to_checkpoint > marker[2]:
-                multiplier = 2
-            else:
-                multiplier = 1
-            
-            # Incentivize the rover to stay away from objects
-            if self.collision_threshold >= 2.0:      # very safe distance
-                multiplier = multiplier + 1
-            elif self.collision_threshold < 2.0 and self.collision_threshold >= 1.5: # pretty safe
-                multiplier = multiplier + .5
-            elif self.collision_threshold < 1.5 and self.collision_threshold >= 1.0: # just enough time to turn
-                multiplier = multiplier + .25
-            else:
-                multiplier = multiplier # probably going to hit something and get a zero reward
-            
-            # Incentize the rover to move towards the Checkpoint and not away from the checkpoint
-            if not self.closer_to_checkpoint:
-                if multiplier > 0:
-                    # Cut the multiplier in half
-                    multiplier = multiplier/2
-                    
-            reward = base_reward * multiplier
-            
+            # If it has not reached the check point is it still on the map
+            on_the_map = ((STAGE_X_MIN - .45) < self.x < (STAGE_X_MAX + .45)) or ((STAGE_Y_MIN - .45) < self.y < (STAGE_Y_MAX + .45))
+            if not on_the_map:
+                print("Rover has gone beyond the world!")
+                end_episode = True
+
+        if end_episode and hasattr(self, "distances_in_recent_steps"):
+            self.distances_in_recent_steps = {"odd": [], "even": []}
+            self.last_distance_to_checkpoint = INITIAL_DISTANCE_TO_CHECKPOINT
         
-        return reward, done
+        return reward, end_episode
     
         
     '''
