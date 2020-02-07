@@ -26,8 +26,8 @@
         "simulation": {
           "maxJobDurationInSeconds": 300,
           "failureBehavior": "Continue",
-          "iamRole": "[YOUR IAM ROLE]"
-          "outputLocation": "burnsca-training",
+          "iamRole": "[YOUR IAM ROLE]",
+          "outputLocation": "[YOUR_S3_BUCKET]",
           "tags": {}
         },
         "simulationApp": {
@@ -128,7 +128,7 @@
           "name": "training-grounds-with-rl",
           "sourceBundleFile": "/simulation_ws/bundle/output.tar",
           "architecture": "X86_64",
-          "s3Bucket": "burnsca-training",
+          "s3Bucket": "[YOUR_S3_BUCKET]",
           "launchConfig": {
             "packageName": "training_grounds",
             "launchFile": "training_full_sim.launch",
@@ -215,7 +215,7 @@
           "maxJobDurationInSeconds": 1800,
           "failureBehavior": "Continue",
           "iamRole": "[YOUR_IAM_ROLE]",
-          "outputLocation": "burnsca-training-output",
+          "outputLocation": "[YOUR_S3_BUCKET]",
           "vpcConfig": {
             "subnets": [
               "[YOUR_SUBNET_A]",
