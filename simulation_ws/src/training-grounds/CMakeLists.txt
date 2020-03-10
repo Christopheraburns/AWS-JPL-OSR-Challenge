@@ -22,5 +22,6 @@ install(DIRECTORY worlds/
 
 install(PROGRAMS
     scripts/run_local_rl_agent.sh
+    scripts/run_model_evaluation.sh
     DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
