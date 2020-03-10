@@ -237,7 +237,7 @@
             "packageName": "training_grounds",
             "launchFile": "eval.launch",
             "environmentVariables": {
-              "MARKOV_PRESET_FILE": "rover_evaluation.py",
+              "MARKOV_PRESET_FILE": "training_grounds.py",
               "MODEL_S3_BUCKET": "[YOUR_S3_BUCKET]",
               "MODEL_S3_PREFIX": "[YOUR_S3_BUCKET_SUBDIR]",
               "ROS_AWS_REGION": "[YOUR_AWS_REGION]"
