@@ -332,7 +332,9 @@ class MarsEnv(gym.Env):
               'CT:%.2f' % self.collision_threshold,             # Collision Threshold
               'CTCP:%f' % self.closer_to_checkpoint,            # Is closer to checkpoint
               'PSR: %f' % self.power_supply_range,              # Steps remaining in Episode
-              'IMU: %f' % avg_imu)
+              'IMU: %f' % avg_imu,
+              'X_POS: %f' % self.x,
+              'Y_POS: %f' % self.y)
 
         self.reward = reward
         self.done = done
