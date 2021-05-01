@@ -61,22 +61,22 @@ def main():
                         default='./checkpoint')
 
     args = parser.parse_args()
-    data_store_params_instance = S3BotoDataStoreParameters(bucket_name=args.model_s3_bucket,
-                                                           s3_folder=args.model_s3_prefix,
-                                                           checkpoint_dir=args.local_model_directory,
-                                                           aws_region=args.aws_region)
-    data_store = S3BotoDataStore(data_store_params_instance)
-    utils.wait_for_checkpoint(args.local_model_directory, data_store)
+    #data_store_params_instance = S3BotoDataStoreParameters(bucket_name=args.model_s3_bucket,
+    #                                                       s3_folder=args.model_s3_prefix,
+    #                                                       checkpoint_dir=args.local_model_directory,
+    #                                                       aws_region=args.aws_region)
+    #data_store = S3BotoDataStore(data_store_params_instance)
+    #utils.wait_for_checkpoint(args.local_model_directory, data_store)
 
-    preset_file_success = data_store.download_presets_if_present(PRESET_LOCAL_PATH)
-    if preset_file_success:
-        environment_file_success = data_store.download_environments_if_present(ENVIRONMENT_LOCAL_PATH)
-        path_and_module = PRESET_LOCAL_PATH + args.markov_preset_file + ":graph_manager"
-        graph_manager = short_dynamic_import(path_and_module, ignore_module_case=True)
-        if environment_file_success:
-            import robomaker.environments
-        print("Using custom preset file!")
-    elif args.markov_preset_file:
+    #preset_file_success = data_store.download_presets_if_present(PRESET_LOCAL_PATH)
+    #if preset_file_success:
+    #    environment_file_success = data_store.download_environments_if_present(ENVIRONMENT_LOCAL_PATH)
+    #    path_and_module = PRESET_LOCAL_PATH + args.markov_preset_file + ":graph_manager"
+    #    graph_manager = short_dynamic_import(path_and_module, ignore_module_case=True)
+    #    if environment_file_success:
+    #        import robomaker.environments
+    #    print("Using custom preset file!")
+    if args.markov_preset_file:
         markov_path = imp.find_module("markov")[1]
         preset_location = os.path.join(markov_path, "presets", args.markov_preset_file)
         path_and_module = preset_location + ":graph_manager"
