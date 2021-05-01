@@ -31,7 +31,7 @@ TRAINING_IMAGE_HEIGHT = 120
 TRAINING_IMAGE_SIZE = (TRAINING_IMAGE_WIDTH, TRAINING_IMAGE_HEIGHT)
 
 LIDAR_SCAN_MAX_DISTANCE = 4.5  # Max distance Lidar scanner can measure
-CRASH_DISTANCE = 0.49  # Min distance to obstacle (The LIDAR is in the center of the 1M Rover)
+CRASH_DISTANCE = 0.50  # Min distance to obstacle (The LIDAR is in the center of the 1M Rover)
 
 # Size of the image queue buffer, we want this to be one so that we consume 1 image
 # at a time, but may want to change this as we add more algorithms
@@ -160,7 +160,7 @@ class MarsEnv(gym.Env):
     def reset(self):
         print('Total Episodic Reward=%.2f' % self.reward_in_episode,
               'Total Episodic Steps=%.2f' % self.steps)
-        self.send_reward_to_cloudwatch(self.reward_in_episode)
+        #self.send_reward_to_cloudwatch(self.reward_in_episode)
 
         # Reset global episodic values
         self.reward = None
@@ -355,27 +355,27 @@ class MarsEnv(gym.Env):
         '''
         
         # Corner boundaries of the world (in Meters)
-        STAGE_X_MIN = -44.0
-        STAGE_Y_MIN = -25.0
-        STAGE_X_MAX = 15.0
+        STAGE_X_MIN = -10.0
+        STAGE_Y_MIN = -22.0
+        STAGE_X_MAX = 46.0
         STAGE_Y_MAX = 22.0
         
         
-        GUIDERAILS_X_MIN = -46
-        GUIDERAILS_X_MAX = 1
-        GUIDERAILS_Y_MIN = -6
-        GUIDERAILS_Y_MAX = 4
+        GUIDERAILS_X_MIN = -10
+        GUIDERAILS_X_MAX = 46
+        GUIDERAILS_Y_MIN = -22
+        GUIDERAILS_Y_MAX = 22
         
         
         # WayPoints to checkpoint
-        WAYPOINT_1_X = -10
-        WAYPOINT_1_Y = -4
+        WAYPOINT_1_X = 11
+        WAYPOINT_1_Y = -1
         
-        WAYPOINT_2_X = -17
-        WAYPOINT_2_Y = 3
+        WAYPOINT_2_X = 22
+        WAYPOINT_2_Y = -2
         
-        WAYPOINT_3_X = -34
-        WAYPOINT_3_Y = 3
+        WAYPOINT_3_X = 33
+        WAYPOINT_3_Y = -3
         
         # REWARD Multipliers
         FINISHED_REWARD = 10000
@@ -493,8 +493,7 @@ class MarsEnv(gym.Env):
                     multiplier = multiplier/2
                     
             reward = base_reward * multiplier
-            
-        
+                    
         return reward, done
     
         
@@ -580,7 +579,7 @@ class MarsEnv(gym.Env):
         # Listen for a collision with anything in the environment
         collsion_states = data.states
         if len(collsion_states) > 0:
-            self.collide = True
+            self.collision = True
 
     
     '''
