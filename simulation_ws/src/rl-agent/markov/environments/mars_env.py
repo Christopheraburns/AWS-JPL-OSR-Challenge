@@ -41,7 +41,7 @@ IMG_QUEUE_BUF_SIZE = 1
 MAX_STEPS = 2000
 
 # Destination Point
-CHECKPOINT_X = 44.25
+CHECKPOINT_X = -44.25
 CHECKPOINT_Y = -4
 
 # Initial position of the robot
@@ -357,26 +357,26 @@ class MarsEnv(gym.Env):
         '''
         
         # Corner boundaries of the world (in Meters)
-        STAGE_X_MIN = -5.0
+        STAGE_X_MIN = 5.0
         STAGE_Y_MIN = -22.0
-        STAGE_X_MAX = 46.0
+        STAGE_X_MAX = -46.0
         STAGE_Y_MAX = 22.0
         
         
-        GUIDERAILS_X_MIN = -5
-        GUIDERAILS_X_MAX = 46
+        GUIDERAILS_X_MIN = 5
+        GUIDERAILS_X_MAX = -46
         GUIDERAILS_Y_MIN = -22
         GUIDERAILS_Y_MAX = 22
         
         
         # WayPoints to checkpoint
-        WAYPOINT_1_X = 11
+        WAYPOINT_1_X = -11
         WAYPOINT_1_Y = -1
         
-        WAYPOINT_2_X = 22
+        WAYPOINT_2_X = -22
         WAYPOINT_2_Y = -2
         
-        WAYPOINT_3_X = 33
+        WAYPOINT_3_X = -33
         WAYPOINT_3_Y = -3
         
         # REWARD Multipliers
@@ -412,7 +412,7 @@ class MarsEnv(gym.Env):
                 return 0, True # No reward
             
             # Has the Rover reached the destination
-            if self.last_position_x >= CHECKPOINT_X and self.last_position_y >= CHECKPOINT_Y:
+            if self.last_position_x <= CHECKPOINT_X and self.last_position_y >= CHECKPOINT_Y:
                 print("Congratulations! The rover has reached the checkpoint!")
                 multiplier = FINISHED_REWARD
                 reward = (base_reward * multiplier) / self.steps # <-- incentivize to reach checkpoint in fewest steps
@@ -431,7 +431,7 @@ class MarsEnv(gym.Env):
             
             # No Episode ending events - continue to calculate reward
             
-            if self.last_position_x >= WAYPOINT_1_X and self.last_position_y >= WAYPOINT_1_Y: # Rover is past the midpoint
+            if self.last_position_x <= WAYPOINT_1_X and self.last_position_y >= WAYPOINT_1_Y: # Rover is past the midpoint
                 # Determine if Rover already received one time reward for reaching this waypoint
                 if not self.reached_waypoint_1:  
                     self.reached_waypoint_1 = True
@@ -440,7 +440,7 @@ class MarsEnv(gym.Env):
                     reward = (WAYPOINT_1_REWARD * multiplier)/ self.steps # <-- incentivize to reach way-point in fewest steps
                     return reward, False
             
-            if self.last_position_x >= WAYPOINT_2_X and self.last_position_y >= WAYPOINT_2_Y: # Rover is past the midpoint
+            if self.last_position_x <= WAYPOINT_2_X and self.last_position_y >= WAYPOINT_2_Y: # Rover is past the midpoint
                 # Determine if Rover already received one time reward for reaching this waypoint
                 if not self.reached_waypoint_2:  
                     self.reached_waypoint_2 = True
@@ -449,7 +449,7 @@ class MarsEnv(gym.Env):
                     reward = (WAYPOINT_2_REWARD * multiplier)/ self.steps # <-- incentivize to reach way-point in fewest steps
                     return reward, False
                     
-            if self.last_position_x >= WAYPOINT_3_X and self.last_position_y >= WAYPOINT_3_Y: # Rover is past the midpoint
+            if self.last_position_x <= WAYPOINT_3_X and self.last_position_y >= WAYPOINT_3_Y: # Rover is past the midpoint
                 # Determine if Rover already received one time reward for reaching this waypoint
                 if not self.reached_waypoint_3:  
                     self.reached_waypoint_3 = True
