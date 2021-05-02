@@ -357,13 +357,13 @@ class MarsEnv(gym.Env):
         '''
         
         # Corner boundaries of the world (in Meters)
-        STAGE_X_MIN = -10.0
+        STAGE_X_MIN = -5.0
         STAGE_Y_MIN = -22.0
         STAGE_X_MAX = 46.0
         STAGE_Y_MAX = 22.0
         
         
-        GUIDERAILS_X_MIN = -10
+        GUIDERAILS_X_MIN = -5
         GUIDERAILS_X_MAX = 46
         GUIDERAILS_Y_MIN = -22
         GUIDERAILS_Y_MAX = 22
@@ -431,7 +431,7 @@ class MarsEnv(gym.Env):
             
             # No Episode ending events - continue to calculate reward
             
-            if self.last_position_x <= WAYPOINT_1_X and self.last_position_y <= WAYPOINT_1_Y: # Rover is past the midpoint
+            if self.last_position_x >= WAYPOINT_1_X and self.last_position_y >= WAYPOINT_1_Y: # Rover is past the midpoint
                 # Determine if Rover already received one time reward for reaching this waypoint
                 if not self.reached_waypoint_1:  
                     self.reached_waypoint_1 = True
@@ -440,7 +440,7 @@ class MarsEnv(gym.Env):
                     reward = (WAYPOINT_1_REWARD * multiplier)/ self.steps # <-- incentivize to reach way-point in fewest steps
                     return reward, False
             
-            if self.last_position_x <= WAYPOINT_2_X and self.last_position_y >= WAYPOINT_2_Y: # Rover is past the midpoint
+            if self.last_position_x >= WAYPOINT_2_X and self.last_position_y >= WAYPOINT_2_Y: # Rover is past the midpoint
                 # Determine if Rover already received one time reward for reaching this waypoint
                 if not self.reached_waypoint_2:  
                     self.reached_waypoint_2 = True
@@ -449,7 +449,7 @@ class MarsEnv(gym.Env):
                     reward = (WAYPOINT_2_REWARD * multiplier)/ self.steps # <-- incentivize to reach way-point in fewest steps
                     return reward, False
                     
-            if self.last_position_x <= WAYPOINT_3_X and self.last_position_y >= WAYPOINT_3_Y: # Rover is past the midpoint
+            if self.last_position_x >= WAYPOINT_3_X and self.last_position_y >= WAYPOINT_3_Y: # Rover is past the midpoint
                 # Determine if Rover already received one time reward for reaching this waypoint
                 if not self.reached_waypoint_3:  
                     self.reached_waypoint_3 = True
