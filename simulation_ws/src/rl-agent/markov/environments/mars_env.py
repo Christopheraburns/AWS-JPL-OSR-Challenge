@@ -23,6 +23,7 @@ from std_msgs.msg import Float64
 from std_msgs.msg import String
 from PIL import Image
 import queue
+from tensorboardX import SummaryWriter
 
 
 VERSION = "0.0.1"
@@ -129,6 +130,9 @@ class MarsEnv(gym.Env):
         rospy.Subscriber('/camera/image_raw', sensor_image, self.callback_image)
         # IMU Sensors
         rospy.Subscriber('/imu/wheel_lb', Imu, self.callback_wheel_lb)
+        self.writer = SummaryWriter()
+        self.num_episodes = 0
+        self.global_steps = 0
 
 
 
@@ -341,6 +345,11 @@ class MarsEnv(gym.Env):
 
         self.last_position_x = self.x
         self.last_position_y = self.y
+        if self.done:
+            self.writer.add_scalar('data/episode_reward', self.reward_in_episode, self.num_episodes)
+            self.num_episodes += 1
+        self.writer.add_scalar('data/reward', self.reward, self.global_steps)
+        self.global_steps += 1
 
 
 
