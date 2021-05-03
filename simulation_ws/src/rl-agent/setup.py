@@ -24,6 +24,7 @@ setup(
         'scipy==0.19.0',
         'tensorflow==1.12.2',
         'rl-coach-slim==0.11.1',
+        'tensorboardx',
     ],
     entry_points = {
         'console_scripts': [
